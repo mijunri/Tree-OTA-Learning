@@ -1,16 +1,16 @@
-package learning;
+package equivalence;
 
 import ota.Location;
 import ota.OTA;
-import ota.OTABuilder;
 import ota.TimeGuard;
-import ta.Clock;
-import ta.TA;
-import ta.TaTransition;
+import equivalence.ta.Clock;
+import equivalence.ta.TA;
+import equivalence.ta.TaTransition;
 import timeword.*;
+import util.OTAUtil;
+import util.TimeWordUtil;
 
 
-import javax.xml.ws.handler.LogicalHandler;
 import java.util.*;
 
 public class DeterministicEQ implements EquivalenceQuery {
@@ -29,11 +29,11 @@ public class DeterministicEQ implements EquivalenceQuery {
 
     @Override
     public DelayTimeWord findCounterExample(OTA hypothesis) {
-        OTA negTeacher = OTABuilder.getNegtiveOTA(teacher);
-        OTA negHypothesis = OTABuilder.getNegtiveOTA(hypothesis);
+        OTA negTeacher = OTAUtil.getNegtiveOTA(teacher);
+        OTA negHypothesis = OTAUtil.getNegtiveOTA(hypothesis);
 
-        TA ta1 = OTABuilder.getCartesian(teacher, negHypothesis);
-        TA ta2 = OTABuilder.getCartesian(negTeacher,hypothesis);
+        TA ta1 = OTAUtil.getCartesian(teacher, negHypothesis);
+        TA ta2 = OTAUtil.getCartesian(negTeacher,hypothesis);
 
 
         List<Node> nodeList1 = counterTrace(ta1);
@@ -77,7 +77,7 @@ public class DeterministicEQ implements EquivalenceQuery {
             }
         }
 
-        LogicTimeWord logicTimeWord = LogicTimeWord.getEmpty();
+        LogicTimeWord logicTimeWord = LogicTimeWord.emptyWord();
 
         for(int i = 0; i < len; i++){
             LogicAction logicAction = new LogicAction(actionArray[i],lowBounds[i],true);

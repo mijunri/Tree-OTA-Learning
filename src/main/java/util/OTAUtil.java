@@ -1,11 +1,15 @@
-package ota;
+package util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import ta.Clock;
-import ta.TA;
-import ta.TaTransition;
+import equivalence.ta.Clock;
+import equivalence.ta.TA;
+import equivalence.ta.TaTransition;
+import ota.Location;
+import ota.OTA;
+import ota.TimeGuard;
+import ota.Transition;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -13,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
-public class OTABuilder {
+public class OTAUtil {
 
     public static OTA getOTAFromJsonFile(String path) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(path)));
@@ -90,27 +94,6 @@ public class OTABuilder {
         return ota;
     }
 
-    public static void sortTran(List<Transition> transitionList){
-        transitionList.sort(new Comparator<Transition>() {
-            @Override
-            public int compare(Transition o1, Transition o2) {
-                if(o1.getSourceId() != o2.getSourceId()){
-                    return o1.getSourceId() - o2.getSourceId();
-                }
-                if(o1.getSymbol().compareTo(o2.getSymbol())!= 0 ){
-                    return o1.getSymbol().compareTo(o2.getSymbol());
-                }
-                if(o1.getTimeGuard().getLeft() != o2.getTimeGuard().getLeft()){
-                    return o1.getTimeGuard().getLeft() - o2.getTimeGuard().getLeft();
-                }
-
-                if(o1.getTimeGuard().isLeftOpen() != o2.getTimeGuard().isLeftOpen()){
-                    return o1.getTimeGuard().isLeftOpen()?1:-1;
-                }
-                return 1;
-            }
-        });
-    }
 
     public static OTA completeOTA(OTA ota){
 
@@ -345,4 +328,25 @@ public class OTABuilder {
 //        }
 //    }
 
+    public static void sortTran(List<Transition> transitionList){
+        transitionList.sort(new Comparator<Transition>() {
+            @Override
+            public int compare(Transition o1, Transition o2) {
+                if(o1.getSourceId() != o2.getSourceId()){
+                    return o1.getSourceId() - o2.getSourceId();
+                }
+                if(o1.getSymbol().compareTo(o2.getSymbol())!= 0 ){
+                    return o1.getSymbol().compareTo(o2.getSymbol());
+                }
+                if(o1.getTimeGuard().getLeft() != o2.getTimeGuard().getLeft()){
+                    return o1.getTimeGuard().getLeft() - o2.getTimeGuard().getLeft();
+                }
+
+                if(o1.getTimeGuard().isLeftOpen() != o2.getTimeGuard().isLeftOpen()){
+                    return o1.getTimeGuard().isLeftOpen()?1:-1;
+                }
+                return 1;
+            }
+        });
+    }
 }

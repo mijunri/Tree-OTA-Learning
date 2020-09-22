@@ -1,27 +1,39 @@
 package timeword;
 
-import timeword.TimeWord;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DelayTimeWord extends TimeWord<DelayAction> {
+@Data
+@AllArgsConstructor
+public class DelayTimeWord{
 
-    public DelayTimeWord(List<DelayAction> delayActionList){
-        setActionList(delayActionList);
+    private List<DelayAction> actionList;
+
+    public int size(){
+        return actionList.size();
     }
 
-    public static DelayTimeWord getEmpty(){
+    public DelayAction get(int i){
+        return actionList.get(i);
+    }
+
+    public static DelayTimeWord emptyWord(){
         return new DelayTimeWord(new ArrayList<>());
     }
 
+    public boolean isEmpty(){
+        return actionList.isEmpty();
+    }
 
     public DelayTimeWord subWord(int fromIndex, int toIndex){
         try{
             List<DelayAction> subList = getActionList().subList(fromIndex,toIndex);
             return new DelayTimeWord(subList);
         }catch (Exception e){
-            return getEmpty();
+            return emptyWord();
         }
     }
 }

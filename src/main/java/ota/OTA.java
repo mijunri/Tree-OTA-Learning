@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import timeword.*;
-
+import util.OTAUtil;
+import util.TimeWordUtil;
 import java.util.*;
 
 @AllArgsConstructor
@@ -96,9 +97,7 @@ public class OTA {
                     continue;
                 }
             }
-
         }
-
         return list;
     }
 
@@ -130,41 +129,41 @@ public class OTA {
 
 
 
-//
-//    @Override
-//    public String toString(){
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("{\n\t").append("\"sigma\":[");
-//        for(String action: getSigma()){
-//            sb.append("\""+action+"\",");
-//        }
-//        sb.deleteCharAt(sb.length()-1).append("],\n\t").append("\"init\":");
-//        String init = getInitLocation().getName();
-//        sb.append(init).append(",\n\t").append("\"name\":\"").append(getName()).append("\"\n\t");
-//        sb.append("\"s\":[");
-//        for(Location l:getLocationList()){
-//            sb.append(l.getName()).append(",");
-//        }
-//        sb.deleteCharAt(sb.length()-1).append("]\n\t\"tran\":{\n");
-//
-//        OTABuilder.sortTran(getTransitionList());
-//        for(int i = 0; i < getTransitionList().size();i++){
-//            Transition t = getTransitionList().get(i);
-//            sb.append("\t\t\"").append(i).append("\":[")
-//                    .append(t.getSourceName()).append(",")
-//                    .append("\"").append(t.getAction()).append("\",")
-//                    .append("\"").append(t.getTimeGuard()).append("\",")
-//                    .append(t.getTargetName()).append(", ").append(t.getReset()).append("]").append(",\n");
-//        }
-//        sb.deleteCharAt(sb.length()-2);
-//        sb.append("\t},\n\t").append("\"accpted\":[");
-//        for(Location l:getAcceptedLocations()){
-//            sb.append(l.getId()).append(",");
-//        }
-//        sb.deleteCharAt(sb.length()-1).append("]\n}");
-//        return sb.toString();
-//    }
-//
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n\t").append("\"sigma\":[");
+        for(String action: getSigma()){
+            sb.append("\""+action+"\",");
+        }
+        sb.deleteCharAt(sb.length()-1).append("],\n\t").append("\"init\":");
+        String init = getInitLocation().getName();
+        sb.append(init).append(",\n\t").append("\"name\":\"").append(getName()).append("\"\n\t");
+        sb.append("\"s\":[");
+        for(Location l:getLocationList()){
+            sb.append(l.getName()).append(",");
+        }
+        sb.deleteCharAt(sb.length()-1).append("]\n\t\"tran\":{\n");
+
+        OTAUtil.sortTran(getTransitionList());
+        for(int i = 0; i < getTransitionList().size();i++){
+            Transition t = getTransitionList().get(i);
+            sb.append("\t\t\"").append(i).append("\":[")
+                    .append(t.getSourceName()).append(",")
+                    .append("\"").append(t.getSymbol()).append("\",")
+                    .append("\"").append(t.getTimeGuard()).append("\",")
+                    .append(t.getTargetName()).append(", ").append(t.getReset()).append("]").append(",\n");
+        }
+        sb.deleteCharAt(sb.length()-2);
+        sb.append("\t},\n\t").append("\"accpted\":[");
+        for(Location l:getAcceptedLocations()){
+            sb.append(l.getId()).append(",");
+        }
+        sb.deleteCharAt(sb.length()-1).append("]\n}");
+        return sb.toString();
+    }
+
     public OTA copy(){
         String name1 = name;
         Set<String> sigma1 = new HashSet<>(sigma);
@@ -245,5 +244,6 @@ public class OTA {
 //            }
 //        }
 //    }
+
 
 }

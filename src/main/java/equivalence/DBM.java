@@ -1,7 +1,7 @@
-package learning;
+package equivalence;
 
 import ota.TimeGuard;
-import ta.Clock;
+import equivalence.ta.Clock;
 
 import java.util.List;
 

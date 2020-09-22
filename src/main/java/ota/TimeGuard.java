@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import timeword.LogicAction;
 
 @Data
 @NoArgsConstructor
@@ -49,6 +50,25 @@ public class TimeGuard {
         }
         setLeft(left);
         setRight(right);
+    }
+
+    public static TimeGuard bottomGuard(LogicAction action){
+        double time = action.getValue();
+        boolean leftOpen,rightOpen;
+        int left,right;
+        if(time == (int)time){
+            leftOpen = false;
+            left = (int)time;
+            rightOpen = false;
+            right = (int)time;
+        }
+        else {
+            leftOpen = true;
+            left = (int)time;
+            rightOpen = true;
+            right = (int)time+1;
+        }
+        return new TimeGuard(leftOpen,rightOpen,left,right);
     }
 
 

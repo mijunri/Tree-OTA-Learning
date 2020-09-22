@@ -1,7 +1,24 @@
 package timeword;
 
-public class DelayAction extends Action {
-    public DelayAction(String Symbol, double value) {
-        super(Symbol, value);
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class DelayAction{
+    private String Symbol;
+    private double value;
+
+    @Override
+    public String toString(){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("(")
+                .append(getSymbol())
+                .append(",")
+                .append(getValue())
+                .append(")");
+        return stringBuilder.toString();
     }
+
+
 }

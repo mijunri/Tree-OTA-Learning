@@ -1,4 +1,4 @@
-package ta;
+package equivalence.ta;
 
 import ota.Location;
 

@@ -4,14 +4,14 @@ import timeword.DelayTimeWord;
 import ota.Location;
 import ota.OTA;
 import timeword.LogicTimeWord;
-import timeword.TimeWordUtil;
+import util.TimeWordUtil;
 
 
-public class OTAMembership {
+public class SmartMembership {
     private OTA teacher;
     private int count;
 
-    public OTAMembership(OTA teacher){
+    public SmartMembership(OTA teacher){
         this.teacher = teacher;
         count = 0;
     }
@@ -22,6 +22,12 @@ public class OTAMembership {
         LogicTimeWord logicTimeWord = TimeWordUtil.tranToLogic(teacher, delayTimeWords);
         Location location = teacher.getLocation(logicTimeWord);
         return new Answer(logicTimeWord,location.isAccept());
+    }
+
+    public boolean answer(LogicTimeWord logicTimeWord){
+        count++;
+        Location location = teacher.getLocation(logicTimeWord);
+        return location.isAccept();
     }
 
     public int getCount() {

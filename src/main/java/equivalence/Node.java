@@ -1,7 +1,7 @@
-package learning;
+package equivalence;
 
 import ota.Location;
-import ta.Clock;
+import equivalence.ta.Clock;
 
 import java.util.List;
 

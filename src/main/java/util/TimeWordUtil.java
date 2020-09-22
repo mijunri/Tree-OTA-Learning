@@ -1,10 +1,12 @@
-package timeword;
+package util;
 
 import ota.Location;
 import ota.OTA;
 import ota.Transition;
-import sun.rmi.runtime.Log;
-import timeword.TimeWord;
+import timeword.DelayAction;
+import timeword.DelayTimeWord;
+import timeword.LogicAction;
+import timeword.LogicTimeWord;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -88,11 +90,11 @@ public class TimeWordUtil {
 
     public static LogicTimeWord tranToLogic(OTA ota, DelayTimeWord delayTimeWord){
         List<DelayAction> actionList = delayTimeWord.getActionList();
-        LogicTimeWord word = LogicTimeWord.getEmpty();
+        LogicTimeWord word = LogicTimeWord.emptyWord();
         LogicAction pre = null;
         Location location = ota.getInitLocation();
         boolean isReset = true;
-        for(Action action: actionList){
+        for(DelayAction action: actionList){
             String symbol = action.getSymbol();
             double value = action.getValue();
             if (pre != null && !pre.isReset()){
@@ -101,7 +103,7 @@ public class TimeWordUtil {
             List<Transition> transitions = ota.getTransitions(location,action.getSymbol(),null);
             for(Transition t: transitions){
                 if(t.isPass(symbol,value)){
-                    LogicAction logicAction = new LogicAction(symbol,value,t.getReset().equals("r")?true:false);
+                    LogicAction logicAction = new LogicAction(symbol,value,t.isReset()?true:false);
                     word = TimeWordUtil.concat(word,logicAction);
                     pre= logicAction;
                     location = t.getTargetLocation();
@@ -113,7 +115,7 @@ public class TimeWordUtil {
 
     public static DelayTimeWord tranToDelay(OTA ota, LogicTimeWord logicTimeWord){
         List<LogicAction> logicActionList = logicTimeWord.getActionList();
-        DelayTimeWord word = DelayTimeWord.getEmpty();
+        DelayTimeWord word = DelayTimeWord.emptyWord();
         LogicAction pre = null;
         Location location = ota.getInitLocation();
         for(LogicAction logicAction: logicActionList){
@@ -130,6 +132,22 @@ public class TimeWordUtil {
                     pre = logicAction;
                     location = t.getTargetLocation();
                 }
+            }
+        }
+        return word;
+    }
+
+    public static DelayTimeWord tranToDelay(LogicTimeWord logicTimeWord){
+        List<LogicAction> logicActionList = logicTimeWord.getActionList();
+        DelayTimeWord word = DelayTimeWord.emptyWord();
+        double clock = 0;
+        for(LogicAction logicAction: logicActionList){
+            String symbol = logicAction.getSymbol();
+            double value = logicAction.getValue() + clock;
+            DelayAction delayAction = new DelayAction(symbol,value);
+            word = TimeWordUtil.concat(word, delayAction);
+            if (logicAction.isReset()){
+                clock = 0;
             }
         }
         return word;

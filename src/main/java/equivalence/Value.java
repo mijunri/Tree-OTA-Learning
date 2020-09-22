@@ -1,4 +1,4 @@
-package learning;
+package equivalence;
 
 public class Value implements Comparable<Value>{
     int value;

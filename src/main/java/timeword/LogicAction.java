@@ -5,17 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 @Data
-
-public class LogicAction extends Action{
-
+@AllArgsConstructor
+public class LogicAction{
+    private String Symbol;
+    private double value;
     private boolean reset;
-
-    public LogicAction(String Symbol, double value, boolean reset) {
-        super(Symbol, value);
-        this.reset = reset;
-    }
-
 
     @Override
     public String toString(){
@@ -29,4 +26,5 @@ public class LogicAction extends Action{
                 .append(")");
         return stringBuilder.toString();
     }
+
 }

@@ -1,8 +1,5 @@
 package tree;
 
-
-import com.sun.deploy.panel.NodeBorder;
-import javafx.scene.NodeBuilder;
 import learning.SmartMembership;
 import lombok.Data;
 import ota.Location;
@@ -136,11 +133,11 @@ public class ClassificationTree {
     }
 
     private Node createNode(LogicTimeWord logicTimeWord){
-        Node.NodeBuilder nodeBuilder = Node.builder();
-        return nodeBuilder.LogicTimeWord(logicTimeWord)
-                .init(logicTimeWord.isEmpty())
-                .accpted(answer(logicTimeWord))
-                .build();
+        Node node = new Node();
+        node.setInit(logicTimeWord.isEmpty());
+        node.setAccpted(answer(logicTimeWord));
+        node.setLogicTimeWord(logicTimeWord);
+        return node;
     }
 
     //把指向Node的迁移指向到它的儿子

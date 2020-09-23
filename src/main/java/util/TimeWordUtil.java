@@ -91,21 +91,19 @@ public class TimeWordUtil {
     public static LogicTimeWord tranToLogic(OTA ota, DelayTimeWord delayTimeWord){
         List<DelayAction> actionList = delayTimeWord.getActionList();
         LogicTimeWord word = LogicTimeWord.emptyWord();
-        LogicAction pre = null;
+        double baseValue = 0;
         Location location = ota.getInitLocation();
-        boolean isReset = true;
+
         for(DelayAction action: actionList){
             String symbol = action.getSymbol();
-            double value = action.getValue();
-            if (pre != null && !pre.isReset()){
-                value += pre.getValue();
-            }
+            double value = action.getValue() + baseValue;
+
             List<Transition> transitions = ota.getTransitions(location,action.getSymbol(),null);
             for(Transition t: transitions){
                 if(t.isPass(symbol,value)){
                     LogicAction logicAction = new LogicAction(symbol,value,t.isReset()?true:false);
                     word = TimeWordUtil.concat(word,logicAction);
-                    pre= logicAction;
+                    baseValue = t.isReset()?0:baseValue+value;
                     location = t.getTargetLocation();
                 }
             }

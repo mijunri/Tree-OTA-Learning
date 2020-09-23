@@ -179,7 +179,7 @@ public class OTA {
             Location source = locationMap.get(t.getSourceLocation());
             Location target = locationMap.get(t.getTargetLocation());
             TimeGuard guard = t.getTimeGuard().copy();
-            Transition t1 = new Transition(source,target,guard,t.getReset(),t.getSymbol());
+            Transition t1 = new Transition(source,target,guard,t.getSymbol(),t.getReset());
             transitionList1.add(t1);
         }
         return new OTA(name1,sigma1,locationList1,transitionList1);

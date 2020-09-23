@@ -6,10 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import equivalence.ta.Clock;
 import equivalence.ta.TA;
 import equivalence.ta.TaTransition;
-import ota.Location;
-import ota.OTA;
-import ota.TimeGuard;
-import ota.Transition;
+import ota.*;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -26,7 +23,9 @@ public class OTAUtil {
         while ((str = reader.readLine()) != null){
             json.append(str);
         }
-        return getOTAFromJson(json.toString());
+        OTA ota = getOTAFromJson(json.toString());
+        ota.getTransitionList().sort(new TranComparator());
+        return ota;
     }
 
     public static OTA getOTAFromJson(String json){
@@ -86,7 +85,7 @@ public class OTAUtil {
             String reset = array.getString(3);
             int targetId = array.getInteger(4);
             Location targetLocation = map.get(targetId);
-            Transition transition = new Transition(sourceLocation,targetLocation,timeGuard,reset,action);
+            Transition transition = new Transition(sourceLocation,targetLocation,timeGuard,action,reset);
             transitionList.add(transition);
         }
 
@@ -107,7 +106,7 @@ public class OTAUtil {
                 if(transitionList.isEmpty()){
                     if(transitionList.isEmpty()){
                         TimeGuard guard = new TimeGuard(false,false,0, TimeGuard.MAX_TIME);
-                        Transition t = new Transition(l,sink,guard,"r",action);
+                        Transition t = new Transition(l,sink,guard,action,"r");
                         transitionList0.add(t);
                         continue;
                     }
@@ -117,7 +116,7 @@ public class OTAUtil {
                 TimeGuard g0 = t0.getTimeGuard();
                 if(g0.getLeft()!=0 || g0.isLeftOpen()){
                     TimeGuard guard = new TimeGuard(false,!g0.isLeftOpen(),0,g0.getLeft());
-                    Transition t = new Transition(l,sink,guard,"r",action);
+                    Transition t = new Transition(l,sink,guard,action,"r");
                     transitionList0.add(t);
                 }
                 for(int i = 1; i < transitionList.size(); i++){
@@ -125,7 +124,7 @@ public class OTAUtil {
                     TimeGuard g1 = t1.getTimeGuard();
                     if(g0.getRight()!= g1.getLeft() || (g0.isRightOpen() && g1.isLeftOpen())){
                         TimeGuard guard = new TimeGuard(!g0.isRightOpen(),!g1.isLeftOpen(),g0.getRight(),g1.getLeft());
-                        Transition t = new Transition(l,sink,guard,"r",action);
+                        Transition t = new Transition(l,sink,guard,action,"r");
                         transitionList0.add(t);
                     }
                     t0 = t1;
@@ -134,7 +133,7 @@ public class OTAUtil {
                 g0 = t0.getTimeGuard();
                 if(g0.getRight()!= TimeGuard.MAX_TIME ){
                     TimeGuard guard = new TimeGuard(!g0.isRightOpen(),false,g0.getRight(), TimeGuard.MAX_TIME);
-                    Transition t = new Transition(l,sink,guard,"r",action);
+                    Transition t = new Transition(l,sink,guard,action,"r");
                     transitionList0.add(t);
                 }
             }
@@ -149,6 +148,7 @@ public class OTAUtil {
             }
             copy.getLocationList().add(sink);
             copy.getTransitionList().addAll(transitionList0);
+            copy.getTransitionList().sort(new TranComparator());
             return copy;
         }
 

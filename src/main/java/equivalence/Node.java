@@ -1,10 +1,16 @@
 package equivalence;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import ota.Location;
 import equivalence.ta.Clock;
 
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Node{
     private Location location;
     private DBM dbm;

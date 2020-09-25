@@ -184,10 +184,7 @@ public class OTA {
         }
         return new OTA(name1,sigma1,locationList1,transitionList1);
     }
-//
-//    public int size(){
-//        return locationList.size();
-//    }
+
 //
 //    public Transition getTransitionByIndexAndTimeWords(int index, TimeWords timeWords){
 //        Location location = getInitLocation();

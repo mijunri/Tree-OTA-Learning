@@ -1,4 +1,6 @@
-package ota;
+package util;
+
+import ota.Transition;
 
 import java.util.Comparator;
 

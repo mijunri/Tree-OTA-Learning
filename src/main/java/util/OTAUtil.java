@@ -104,12 +104,10 @@ public class OTAUtil {
             for(String action: copy.getSigma()){
                 List<Transition> transitionList = ota.getTransitions(l,action,null);
                 if(transitionList.isEmpty()){
-                    if(transitionList.isEmpty()){
-                        TimeGuard guard = new TimeGuard(false,false,0, TimeGuard.MAX_TIME);
-                        Transition t = new Transition(l,sink,guard,action,"r");
-                        transitionList0.add(t);
-                        continue;
-                    }
+                    TimeGuard guard = new TimeGuard(false,false,0, TimeGuard.MAX_TIME);
+                    Transition t = new Transition(l,sink,guard,action,"r");
+                    transitionList0.add(t);
+                    continue;
                 }
                 sortTran(transitionList);
                 Transition t0 = transitionList.get(0);
@@ -151,7 +149,6 @@ public class OTAUtil {
             copy.getTransitionList().sort(new TranComparator());
             return copy;
         }
-
     }
 
     public static OTA removeSink(OTA ota){

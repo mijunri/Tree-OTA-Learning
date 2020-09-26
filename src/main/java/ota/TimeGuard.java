@@ -146,5 +146,8 @@ public class TimeGuard {
         return stringBuilder.toString();
     }
 
+    public TimeGuard copy(){
+        return new TimeGuard(lowerBoundOpen,upperBoundOpen,lowerBound,upperBound);
+    }
 
 }

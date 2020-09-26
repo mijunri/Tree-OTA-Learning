@@ -11,7 +11,7 @@ import timeword.LogicTimeWord;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Location{
+public class Location implements Cloneable{
     private int id;
     private String name;
     private boolean init;

@@ -155,12 +155,14 @@ public class ClassificationTree {
     }
 
     public void buildHypothesis(){
+        map = new HashMap<>();
+
         List<Location> locationList = buildLocationList();
         List<Transition> transitionList = buildTransitionList();
 
         OTA evidenceRTA = new OTA(getName(),getSigma(),locationList,transitionList);
         OTA hypothesis = OTAUtil.evidToOTA(evidenceRTA);
-        hypothesis = OTAUtil.completeOTA(hypothesis);
+        OTAUtil.completeOTA(hypothesis);
         setHypothesis(hypothesis);
     }
 
@@ -176,7 +178,7 @@ public class ClassificationTree {
             String symbol = action.getSymbol();
             String reset = action.isReset()?"r":"n";
             TimeGuard timeGuard = TimeGuard.bottomGuard(action);
-            Transition transition = new Transition(sourceLocation,targetLocation,timeGuard,reset,symbol);
+            Transition transition = new Transition(sourceLocation,targetLocation,timeGuard,symbol,reset);
             transitionList.add(transition);
         }
         return transitionList;
@@ -265,10 +267,6 @@ public class ClassificationTree {
         }
     }
 
-    public LogicTimeWord mappedWord(LogicTimeWord logicTimeWord){
-        Location location = hypothesis.getLocation(logicTimeWord);
-        return map.get(location).getLogicTimeWord();
-    }
 
     private boolean answer(LogicTimeWord logicTimeWord){
         return smartMembership.answer(logicTimeWord);
@@ -297,13 +295,6 @@ public class ClassificationTree {
         }
         return leafMap;
     }
-
-
-
-    public Node getLeaf(LogicTimeWord timeWord){
-        return getLeafMap().get(timeWord);
-    }
-
 
     private List<Node> leafList(){
         Map<LogicTimeWord, Node> leafMap = getLeafMap();

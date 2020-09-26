@@ -66,11 +66,11 @@ public class DBM {
     //and操作
     public void and(Clock c, TimeGuard timeGuard){
         int index = clockList.indexOf(c);
-        Value right = new Value(timeGuard.getRight(),!timeGuard.isRightOpen());
+        Value right = new Value(timeGuard.getUpperBound(),!timeGuard.isUpperBoundOpen());
         if(right.compareTo(matrix[index+1][0]) < 0){
             matrix[index+1][0] = right;
         }
-        Value left = new Value(timeGuard.getLeft()*-1,!timeGuard.isLeftOpen());
+        Value left = new Value(timeGuard.getLowerBound()*-1,!timeGuard.isLowerBoundOpen());
         if(left.compareTo(matrix[0][index+1]) < 0){
             matrix[0][index+1] = left;
         }

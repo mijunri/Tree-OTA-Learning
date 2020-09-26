@@ -2,8 +2,9 @@ package util;
 
 import ota.TimeGuard;
 import ota.Transition;
+import tree.Track;
+import util.comparator.TimeGuardComparator;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class TimeGuardUtil {
 
 
     //求一组互不包含的guard的补
-    public List<TimeGuard>  complementary(List<TimeGuard> guardList){
+    public static List<TimeGuard> complementary(List<TimeGuard> guardList){
         List<TimeGuard> complementaryList = new ArrayList<>();
 
         if(guardList.isEmpty()){
@@ -72,7 +73,7 @@ public class TimeGuardUtil {
         TimeGuard pre = guardList.get(0);
         if( pre.getLowerBound() != 0 || pre.isLowerBoundOpen() ){
             TimeGuard guard = new TimeGuard(false, pre.isUpperBoundClose(),0,pre.getLowerBound());
-            guardList.add(guard);
+            complementaryList.add(guard);
         }
 
         for(int i = 1; i < guardList.size(); i++){
@@ -80,7 +81,7 @@ public class TimeGuardUtil {
             if(pre.getUpperBound() != current.getLowerBound() || (pre.isUpperBoundOpen() && current.isLowerBoundOpen())){
                 TimeGuard guard = new TimeGuard(pre.isUpperBoundClose(), current.isLowerBoundClose(),
                         pre.getUpperBound() , current.getLowerBound());
-                guardList.add(guard);
+                complementaryList.add(guard);
             }
             pre = current;
         }
@@ -88,10 +89,18 @@ public class TimeGuardUtil {
         if(pre.getUpperBound() != TimeGuard.MAX_TIME ){
             TimeGuard guard = new TimeGuard(pre.isUpperBoundClose(),false,
                     pre.getUpperBound() , TimeGuard.MAX_TIME);
-            guardList.add(guard);
+            complementaryList.add(guard);
         }
 
-        return guardList;
+        return complementaryList;
+    }
+
+    public static List<TimeGuard> obtainGuardList(List<Transition> transitionList){
+        List<TimeGuard> timeGuardList = new ArrayList<>();
+        for(Transition transition: transitionList){
+            timeGuardList.add(transition.getTimeGuard());
+        }
+        return timeGuardList;
     }
 
 

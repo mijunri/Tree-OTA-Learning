@@ -41,10 +41,10 @@ public class Learner {
         String base = ".\\src\\main\\resources\\";
         String path = base+"example.json";
         OTA ota = OTAUtil.getOTAFromJsonFile(path);
-        ota = OTAUtil.completeOTA(ota);
+        OTAUtil.completeOTA(ota);
         SmartMembership membership = new SmartMembership(ota);
         EquivalenceQuery equivalenceQuery = new DeterministicEQ(ota);
-        ClassificationTree classificationTree = new ClassificationTree("hypothesis",membership,ota.getSigma());
+        ClassificationTree classificationTree = new ClassificationTree("h",membership,ota.getSigma());
         Learner learner = new Learner(membership,equivalenceQuery,classificationTree);
         learner.learn();
     }

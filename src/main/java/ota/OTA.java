@@ -10,13 +10,15 @@ import org.apache.commons.lang.StringUtils;
 import timeword.*;
 import util.OTAUtil;
 import util.TimeWordUtil;
+import util.comparator.TranComparator;
+
 import java.util.*;
 
 @AllArgsConstructor
 @Data
 @NoArgsConstructor
 @Builder
-public class OTA {
+public class OTA{
 
     private String name;
     private Set<String> sigma;
@@ -84,7 +86,7 @@ public class OTA {
             }
 
             if (symbol != null){
-                if (StringUtils.equals(tSymbol,symbol)){
+                if (!StringUtils.equals(tSymbol,symbol)){
                     iterator.remove();
                     continue;
                 }
@@ -92,7 +94,7 @@ public class OTA {
 
             if (toLocation != null){
                 int toId = toLocation.getId();
-                if (toId == tTargetId){
+                if (toId != tTargetId){
                     iterator.remove();
                     continue;
                 }
@@ -126,10 +128,6 @@ public class OTA {
     }
 
 
-
-
-
-
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
@@ -146,7 +144,7 @@ public class OTA {
         }
         sb.deleteCharAt(sb.length()-1).append("]\n\t\"tran\":{\n");
 
-        OTAUtil.sortTran(getTransitionList());
+        getTransitionList().sort(new TranComparator());
         for(int i = 0; i < getTransitionList().size();i++){
             Transition t = getTransitionList().get(i);
             sb.append("\t\t\"").append(i).append("\":[")
@@ -184,63 +182,5 @@ public class OTA {
         }
         return new OTA(name1,sigma1,locationList1,transitionList1);
     }
-
-//
-//    public Transition getTransitionByIndexAndTimeWords(int index, TimeWords timeWords){
-//        Location location = getInitLocation();
-//        List<TimeWord> timeWordList = timeWords.getWordList();
-//        boolean isReset = true;
-//        TimeWord pre = null;
-//        Transition transition = null;
-//
-//        for(int i = 0; i < index; i++){
-//            TimeWord word = new TimeWord(timeWordList.get(i).getAction(),timeWordList.get(i).getValue());
-//            if(!isReset){
-//                double value = word.getValue();
-//                value = value + pre.getValue();
-//                word.setValue(value);
-//            }
-//            List<Transition> transitionList = getTransitions(location,word.getAction(),null);
-//            for(Transition t: transitionList){
-//                if(t.isPass(word)){
-//                    location = t.getTargetLocation();
-//                    transition = t;
-//                    if(t.isReset()){
-//                        isReset = true;
-//                    }else {
-//                        isReset = false;
-//                        pre = word;
-//                    }
-//                    break;
-//                }
-//            }
-//        }
-//        return transition;
-//    }
-//
-//
-//    public void refineRest(TimeWords words, int len){
-//        Location location = getInitLocation();
-//        List<TimeWord> timeWordList = words.getWordList();
-//
-//        TimeWord pre = null;
-//        for(int i = 0; i < len; i++){
-//            TimeWord word = timeWordList.get(i);
-//
-//            List<Transition> transitionList = getTransitions(location,word.getAction(),null);
-//            for(Transition t: transitionList){
-//                if(t.isPass(word)){
-//                    location = t.getTargetLocation();
-//                    if(t.isReset()){
-//                        word.setReset(true);
-//                    }else {
-//                        word.setReset(false);
-//                    }
-//                    break;
-//                }
-//            }
-//        }
-//    }
-
 
 }

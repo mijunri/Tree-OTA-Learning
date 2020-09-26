@@ -7,6 +7,7 @@ import equivalence.ta.Clock;
 import equivalence.ta.TA;
 import equivalence.ta.TaTransition;
 import ota.*;
+import util.comparator.TranComparator;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -94,61 +95,40 @@ public class OTAUtil {
     }
 
 
-    public static OTA completeOTA(OTA ota){
+    public static void completeOTA(OTA ota){
 
-        OTA copy = ota.copy();
-        Location sink = new Location(copy.size()+1,""+(copy.size()+1),false,false);
 
-        List<Transition> transitionList0 = new ArrayList<>();
-        for(Location l: copy.getLocationList()){
-            for(String action: copy.getSigma()){
-                List<Transition> transitionList = ota.getTransitions(l,action,null);
-                if(transitionList.isEmpty()){
-                    TimeGuard guard = new TimeGuard(false,false,0, TimeGuard.MAX_TIME);
-                    Transition t = new Transition(l,sink,guard,action,"r");
-                    transitionList0.add(t);
+        List<Transition> transitionList = ota.getTransitionList();
+        List<Transition> complementaryTranList = new ArrayList<>();
+        List<Location> locationList = ota.getLocationList();
+        Set<String> sigma = ota.getSigma();
+
+        Location sink = new Location(ota.size(),"sink", false, false);
+        for(Location location: locationList){
+            for(String symbol: sigma){
+                List<Transition> transitions = ota.getTransitions(location,symbol,null);
+                if (transitions.isEmpty()){
+                    Transition transition  = Transition.builder()
+                            .sourceLocation(location)
+                            .targetLocation(sink)
+                            .symbol(symbol)
+                            .reset("r")
+                            .timeGuard(new TimeGuard("[0,+)"))
+                            .build();
+                    complementaryTranList.add(transition);
                     continue;
                 }
-                sortTran(transitionList);
-                Transition t0 = transitionList.get(0);
-                TimeGuard g0 = t0.getTimeGuard();
-                if(g0.getLeft()!=0 || g0.isLeftOpen()){
-                    TimeGuard guard = new TimeGuard(false,!g0.isLeftOpen(),0,g0.getLeft());
-                    Transition t = new Transition(l,sink,guard,action,"r");
-                    transitionList0.add(t);
-                }
-                for(int i = 1; i < transitionList.size(); i++){
-                    Transition t1 = transitionList.get(i);
-                    TimeGuard g1 = t1.getTimeGuard();
-                    if(g0.getRight()!= g1.getLeft() || (g0.isRightOpen() && g1.isLeftOpen())){
-                        TimeGuard guard = new TimeGuard(!g0.isRightOpen(),!g1.isLeftOpen(),g0.getRight(),g1.getLeft());
-                        Transition t = new Transition(l,sink,guard,action,"r");
-                        transitionList0.add(t);
-                    }
-                    t0 = t1;
-                    g0 = t0.getTimeGuard();
-                }
-                g0 = t0.getTimeGuard();
-                if(g0.getRight()!= TimeGuard.MAX_TIME ){
-                    TimeGuard guard = new TimeGuard(!g0.isRightOpen(),false,g0.getRight(), TimeGuard.MAX_TIME);
-                    Transition t = new Transition(l,sink,guard,action,"r");
-                    transitionList0.add(t);
-                }
+                complementaryTranList.addAll(TransitionUtil.complementary(transitions, sink));
             }
         }
-        if(transitionList0.isEmpty()){
-            return copy;
-        }else {
-            for(String action:copy.getSigma()){
-                TimeGuard timeGuard = new TimeGuard(false,false,0, TimeGuard.MAX_TIME);
-                Transition transition = new Transition(sink,sink,timeGuard,"r",action);
-                transitionList0.add(transition);
-            }
-            copy.getLocationList().add(sink);
-            copy.getTransitionList().addAll(transitionList0);
-            copy.getTransitionList().sort(new TranComparator());
-            return copy;
+
+        if (complementaryTranList.isEmpty()){
+            return;
         }
+
+        transitionList.addAll(complementaryTranList);
+        locationList.add(sink);
+
     }
 
     public static OTA removeSink(OTA ota){
@@ -178,30 +158,17 @@ public class OTAUtil {
         for(Location l:evidenceOTA.getLocationList()){
             for(String action: evidenceOTA.getSigma()){
                 List<Transition> transitionList1 = evidenceOTA.getTransitions(l,action,null);
-                transitionList1.sort(new Comparator<Transition>() {
-                    @Override
-                    public int compare(Transition o1, Transition o2) {
-                        if(o1.getTimeGuard().getLeft() < o2.getTimeGuard().getLeft()){
-                            return -1;
-                        }
-                        if(o1.getTimeGuard().getLeft() == o2.getTimeGuard().getLeft()
-                                && !o1.getTimeGuard().isLeftOpen()){
-                            return -1;
-                        }
-                        return 1;
-                    }
-                });
+                transitionList1.sort(new TranComparator());
                 for(int i = 0; i < transitionList1.size(); i++){
-
                     if(i < transitionList1.size()-1){
                         TimeGuard timeGuard1 = transitionList1.get(i).getTimeGuard();
                         TimeGuard timeGuard2 = transitionList1.get(i+1).getTimeGuard();
-                        timeGuard1.setRight(timeGuard2.getLeft());
-                        timeGuard1.setRightOpen(!timeGuard2.isLeftOpen());
+                        timeGuard1.setUpperBound(timeGuard2.getLowerBound());
+                        timeGuard1.setUpperBoundOpen(!timeGuard2.isLowerBoundOpen());
                     }else {
                         TimeGuard timeGuard1 = transitionList1.get(i).getTimeGuard();
-                        timeGuard1.setRight(TimeGuard.MAX_TIME);
-                        timeGuard1.setRightOpen(false);
+                        timeGuard1.setUpperBound(TimeGuard.MAX_TIME);
+                        timeGuard1.setUpperBoundOpen(false);
                     }
                 }
             }
@@ -287,63 +254,4 @@ public class OTAUtil {
         return neg;
     }
 
-//    public static void refineEvidGuard(OTA evidOTA){
-//        Set<Location> visited = new HashSet<>();
-//        LinkedList<Location> queue = new LinkedList<>();
-//        Location location = evidOTA.getInitLocation();
-//        queue.offer(location);
-//        while (!queue.isEmpty()){
-//            Location current = queue.poll();
-//            boolean reset = current.isReset();
-//            if(current.isReset()){
-//                current.setValue(0);
-//            }
-//            double value = current.getValue();
-//            for(Transition t: evidOTA.getTransitions(current,null,null)){
-//                Location target = t.getTargetLocation();
-//                double w = t.getTimeGuard().getW();
-//                w = w+value;
-//                if(!reset){
-//                    TimeGuard guard = new TimeGuard(w);
-//                    t.setTimeGuard(guard);
-//                }
-//                target.setValue(w);
-//                if(visited.contains(target)){
-//                    continue;
-//                }else {
-//                    visited.add(target);
-//                    queue.offer(target);
-//                }
-//
-//            }
-//        }
-//
-//        for(Transition t: evidOTA.getTransitionList()){
-//            if(!t.getTargetLocation().isReset()){
-//                t.setReset("n");
-//            }
-//        }
-//    }
-
-    public static void sortTran(List<Transition> transitionList){
-        transitionList.sort(new Comparator<Transition>() {
-            @Override
-            public int compare(Transition o1, Transition o2) {
-                if(o1.getSourceId() != o2.getSourceId()){
-                    return o1.getSourceId() - o2.getSourceId();
-                }
-                if(o1.getSymbol().compareTo(o2.getSymbol())!= 0 ){
-                    return o1.getSymbol().compareTo(o2.getSymbol());
-                }
-                if(o1.getTimeGuard().getLeft() != o2.getTimeGuard().getLeft()){
-                    return o1.getTimeGuard().getLeft() - o2.getTimeGuard().getLeft();
-                }
-
-                if(o1.getTimeGuard().isLeftOpen() != o2.getTimeGuard().isLeftOpen()){
-                    return o1.getTimeGuard().isLeftOpen()?1:-1;
-                }
-                return 1;
-            }
-        });
-    }
 }

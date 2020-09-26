@@ -49,12 +49,12 @@ public class Transition {
         return targetLocation.getName();
     }
 
-    public int getLeftBound(){
-        return timeGuard.getLeft();
+    public int getLowerBound(){
+        return timeGuard.getLowerBound();
     }
 
-    public int getRightBound(){
-        return timeGuard.getRight();
+    public int getUpperBound(){
+        return timeGuard.getUpperBound();
     }
 
 

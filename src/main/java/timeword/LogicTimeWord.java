@@ -6,6 +6,7 @@ import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -35,5 +36,18 @@ public class LogicTimeWord{
         }catch (Exception e){
             return emptyWord();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LogicTimeWord)) return false;
+        LogicTimeWord that = (LogicTimeWord) o;
+        return getActionList().equals(that.getActionList());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getActionList());
     }
 }

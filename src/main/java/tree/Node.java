@@ -35,13 +35,12 @@ public class Node{
 
     @Override
     public int hashCode(){
-        return getLogicTimeWord().hashCode();
+        return super.hashCode();
     }
 
     @Override
     public  boolean equals(Object o){
-        Node node = (Node)o;
-        return getLogicTimeWord().equals(node.getLogicTimeWord());
+        return super.equals(o);
     }
 
     public boolean isLeaf(){
@@ -53,6 +52,8 @@ public class Node{
         }
         return true;
     }
+
+
 
     @Override
     public String toString(){

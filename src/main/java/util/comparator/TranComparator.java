@@ -1,4 +1,4 @@
-package util;
+package util.comparator;
 
 import ota.Transition;
 
@@ -16,11 +16,11 @@ public class TranComparator implements Comparator<Transition> {
         if(var2 != 0){
             return var2;
         }
-        int var3 = o1.getLeftBound() - o2.getLeftBound();
+        int var3 = o1.getLowerBound() - o2.getUpperBound();
         if(var3 !=0){
             return var3;
         }
-        int var4 = o1.getRightBound() - o2.getRightBound();
+        int var4 = o1.getUpperBound() - o2.getUpperBound();
         if(var4 != 0){
             return var4;
         }

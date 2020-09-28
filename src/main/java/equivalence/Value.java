@@ -1,29 +1,13 @@
 package equivalence;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class Value implements Comparable<Value>{
-    int value;
-    boolean equal;
-
-    public Value(int value, boolean equal) {
-        this.value = value;
-        this.equal = equal;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    public void setValue(int value) {
-        this.value = value;
-    }
-
-    public boolean isEqual() {
-        return equal;
-    }
-
-    public void setEqual(boolean equal) {
-        this.equal = equal;
-    }
+    private int value;
+    private boolean equal;
 
     public static Value add(Value v2, Value v3){
         int value = v2.getValue()+v3.getValue();

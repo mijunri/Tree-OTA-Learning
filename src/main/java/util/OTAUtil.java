@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import equivalence.ta.Clock;
 import equivalence.ta.TA;
+import equivalence.ta.TaTimeGuard;
 import equivalence.ta.TaTransition;
 import ota.*;
 import util.comparator.TranComparator;
@@ -94,9 +95,7 @@ public class OTAUtil {
         return ota;
     }
 
-
     public static void completeOTA(OTA ota){
-
 
         List<Transition> transitionList = ota.getTransitionList();
         List<Transition> complementaryTranList = new ArrayList<>();
@@ -176,55 +175,44 @@ public class OTAUtil {
         return evidenceOTA;
     }
 
-    public static TA getCartesian(OTA o1, OTA o2){
+    public static TA getCartesian(OTA ota1, OTA ota2){
+        //初始化时钟
         Clock c1 = new Clock("c1");
         Clock c2 = new Clock("c2");
         Set<Clock> clockSet = new HashSet<>();
         clockSet.add(c1);
         clockSet.add(c2);
 
-
+        //初始化sigma字符集
         Set<String> sigma = new HashSet<>();
-        sigma.addAll(o1.getSigma());
-        sigma.addAll(o2.getSigma());
+        sigma.addAll(ota1.getSigma());
+        sigma.addAll(ota2.getSigma());
 
-        Map<Integer, Location> map1 = new HashMap<>();
-        Map<Integer, Location> map2 = new HashMap<>();
-        for(Location l: o1.getLocationList()){
-            map1.put(l.getId(),l);
-        }
-        for(Location l:o2.getLocationList()){
-            map2.put(l.getId(),l);
-        }
-        List<Location> locationList = new ArrayList<>();
+
+
         Map<Integer, Location> map = new HashMap<>();
-        for(Location l1:o1.getLocationList()){
-            for(Location l2:o2.getLocationList()){
-                String name = null;
-                if(l1.getName().equals(l2.getName())){
-                    name = "true";
-                }else {
-                    name = "false";
-                }
-                int id = (l2.getId()-1)*o1.size()+l1.getId();
-                boolean init = l1.isInit() && l2.isInit();
-                boolean accpted = l1.isAccept() && l2.isAccept();
+        for(Location location1 : ota1.getLocationList()){
+            for(Location location2 : ota2.getLocationList()){
+                String name = location1.getName()+"@"+location2.getName();
+                int id = (location2.getId()-1)*ota1.size()+location1.getId();
+                boolean init = location1.isInit() && location2.isInit();
+                boolean accpted = location1.isAccept() && location2.isAccept();
                 Location location = new Location(id,name,init,accpted);
                 map.put(id,location);
-                locationList.add(location);
             }
         }
+        List<Location> locationList = new ArrayList<>(map.values());
+
 
         List<TaTransition> taTransitionList = new ArrayList<>();
-        for(Transition t1:o1.getTransitionList()){
-            for(Transition t2: o2.getTransitionList()){
+        for(Transition t1 : ota1.getTransitionList()){
+            for(Transition t2 : ota2.getTransitionList()){
                 if(!t1.getSymbol().equals(t2.getSymbol())){
                     continue;
                 }
-
-                Map<TimeGuard, Clock> timeGuardClockMap = new HashMap<>();
-                timeGuardClockMap.put(t1.getTimeGuard(),c1);
-                timeGuardClockMap.put(t2.getTimeGuard(),c2);
+                TaTimeGuard taTimeGuard = new TaTimeGuard();
+                taTimeGuard.add(t1.getTimeGuard(),c1);
+                taTimeGuard.add(t2.getTimeGuard(),c2);
 
                 Set<Clock> resetClockSet = new HashSet<>();
                 if(t1.isReset()){
@@ -234,15 +222,16 @@ public class OTAUtil {
                     resetClockSet.add(c2);
                 }
 
-                int sourceId = (t2.getSourceId()-1)*o1.size()+t1.getSourceId();
-                int targetId = (t2.getTargetId()-1)*o1.size()+t1.getTargetId();
+                int sourceId = (t2.getSourceId()-1)*ota1.size()+t1.getSourceId();
+                int targetId = (t2.getTargetId()-1)*ota1.size()+t1.getTargetId();
                 Location source = map.get(sourceId);
                 Location target = map.get(targetId);
-                TaTransition taTransition = new TaTransition(source,target,t1.getSymbol(),timeGuardClockMap,resetClockSet);
+                TaTransition taTransition = new TaTransition(source,target,t1.getSymbol(),taTimeGuard,resetClockSet);
                 taTransitionList.add(taTransition);
             }
         }
-        String name = o1.getName()+":"+o2.getName();
+
+        String name = ota1.getName()+":"+ota2.getName();
         return new TA(name,clockSet,sigma,locationList,taTransitionList);
     }
 

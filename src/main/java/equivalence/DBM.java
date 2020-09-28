@@ -1,10 +1,15 @@
 package equivalence;
 
+import equivalence.ta.TaTimeGuard;
+import lombok.Data;
 import ota.TimeGuard;
 import equivalence.ta.Clock;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+@Data
 public class DBM {
 
     private final List<Clock> clockList;
@@ -16,37 +21,29 @@ public class DBM {
     }
 
     public static DBM getInitDBM(List<Clock> clockList){
+        //因为有零时钟，所以矩阵大小为时钟数加一
         int n = clockList.size()+1;
         Value[][] matrix = new Value[n][n];
+
+        //初始化为>=0
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
                 matrix[i][j] = new Value(0,true);
             }
         }
+
+        //设置初始范围 <正无穷
         for(int i = 1; i < n; i++){
             matrix[i][0] = new Value(Integer.MAX_VALUE,false);
         }
         return new DBM(clockList,matrix);
     }
 
-    public List<Clock> getClockList() {
-        return clockList;
-    }
-
-    public Value[][] getMatrix() {
-        return matrix;
-    }
-
-    public void setMatrix(Value[][] matrix) {
-        this.matrix = matrix;
-    }
-
-    //Floyds 算法
+    //Floyds算法求最短边
     public void canonical(){
         for(int k = 0; k < size(); k++){
             for(int i = 0; i < size(); i++){
                 for(int j = 0; j < size(); j++){
-                    Value v1 = matrix[i][j];
                     Value v = Value.add(matrix[i][k],matrix[k][j]);
                     if(matrix[i][j].compareTo(v) > 0){
                         matrix[i][j] = v;
@@ -56,7 +53,7 @@ public class DBM {
         }
     }
 
-    //up操作
+    //up操作,把上限变为正无穷
     public void up(){
         for(int i = 1; i <size();i++ ){
             matrix[i][0] = new Value(Integer.MAX_VALUE,false);
@@ -66,13 +63,20 @@ public class DBM {
     //and操作
     public void and(Clock c, TimeGuard timeGuard){
         int index = clockList.indexOf(c);
-        Value right = new Value(timeGuard.getUpperBound(),!timeGuard.isUpperBoundOpen());
-        if(right.compareTo(matrix[index+1][0]) < 0){
-            matrix[index+1][0] = right;
+        Value upperBound = new Value(timeGuard.getUpperBound(),!timeGuard.isUpperBoundOpen());
+        if(upperBound.compareTo(matrix[index+1][0]) < 0){
+            matrix[index+1][0] = upperBound;
         }
-        Value left = new Value(timeGuard.getLowerBound()*-1,!timeGuard.isLowerBoundOpen());
-        if(left.compareTo(matrix[0][index+1]) < 0){
-            matrix[0][index+1] = left;
+        Value lowerBound = new Value(timeGuard.getLowerBound()*(-1),!timeGuard.isLowerBoundOpen());
+        if(lowerBound.compareTo(matrix[0][index+1]) < 0){
+            matrix[0][index+1] = lowerBound;
+        }
+    }
+
+    //and操作，TaTimeGuard
+    public void and(TaTimeGuard taTimeGuard){
+        for(Map.Entry<TimeGuard, Clock> entry : taTimeGuard.entrySet()){
+            and(entry.getValue(), entry.getKey());
         }
     }
 
@@ -82,6 +86,13 @@ public class DBM {
         for(int i = 0; i < size(); i++){
             matrix[index][i] = matrix[0][i];
             matrix[i][index] = matrix[i][0];
+        }
+    }
+
+    //reset操作，reset一个集合
+    public void reset(Set<Clock> clockSet){
+        for (Clock c : clockSet){
+            reset(c);
         }
     }
 
@@ -99,6 +110,7 @@ public class DBM {
         return true;
     }
 
+    //包含关系判断
     public boolean include(DBM dbm){
         for(int i = 0; i < size(); i++){
             for(int j = 0; j < size(); j++){

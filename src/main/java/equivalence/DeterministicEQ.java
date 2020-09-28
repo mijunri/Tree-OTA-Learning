@@ -1,11 +1,13 @@
 package equivalence;
 
+import equivalence.ta.TaTimeGuard;
 import ota.Location;
 import ota.OTA;
 import ota.TimeGuard;
 import equivalence.ta.Clock;
 import equivalence.ta.TA;
 import equivalence.ta.TaTransition;
+import ota.Transition;
 import timeword.*;
 import util.OTAUtil;
 import util.TimeWordUtil;
@@ -35,41 +37,29 @@ public class DeterministicEQ implements EquivalenceQuery {
         TA ta1 = OTAUtil.getCartesian(teacher, negHypothesis);
         TA ta2 = OTAUtil.getCartesian(negTeacher,hypothesis);
 
+        List<TransitionStateSet> traceList1 = counterTrace(ta1);
+        List<TransitionStateSet> traceList2 = counterTrace(ta2);
 
-        List<Node> nodeList1 = counterTrace(ta1);
-        List<Node> nodeList2 = counterTrace(ta2);
-
-        List<Node> nodeList = null;
-        if(nodeList1 == null  && nodeList2 == null ){
-            return null;
-        }
-        if(nodeList1 == null){
-            nodeList = nodeList2;
-        }
-        else if(nodeList2 == null){
-            nodeList = nodeList1;
-        }
-        else {
-            nodeList = nodeList1.size() < nodeList2.size()?nodeList1:nodeList2;
-        }
+        List<TransitionStateSet> traceList = shortList(traceList1, traceList2);
 
 
-        int len = nodeList.size();
-        String[] actionArray = new String[len];
+        int len = traceList.size();
+
+        String[] symbolArray = new String[len];
         double[] lowBounds = new double[len];
         double[] highBounds = new double[len];
 
         for(int i = 0; i < len; i++){
-            Node node = nodeList.get(i);
-            String action = node.getAction();
-            actionArray[i] = action;
-            Value v = node.getDbm().getMatrix()[0][1];
+            TransitionStateSet transitionStateSet = traceList.get(i);
+            String action = transitionStateSet.getSymbol();
+            symbolArray[i] = action;
+            Value v = transitionStateSet.getDbm().getMatrix()[0][1];
             if(v.isEqual()){
                 lowBounds[i] = v.getValue()*-1;
             }else {
                 lowBounds[i] = v.getValue()*-1+0.1;
             }
-            Value v1 = node.getDbm().getMatrix()[1][0];
+            Value v1 = transitionStateSet.getDbm().getMatrix()[1][0];
             if(v1.isEqual()){
                 highBounds[i] = v1.getValue();
             }else {
@@ -80,7 +70,7 @@ public class DeterministicEQ implements EquivalenceQuery {
         LogicTimeWord logicTimeWord = LogicTimeWord.emptyWord();
 
         for(int i = 0; i < len; i++){
-            LogicAction logicAction = new LogicAction(actionArray[i],lowBounds[i],true);
+            LogicAction logicAction = new LogicAction(symbolArray[i],lowBounds[i],true);
             logicTimeWord = TimeWordUtil.concat(logicTimeWord,logicAction);
         }
 
@@ -118,73 +108,73 @@ public class DeterministicEQ implements EquivalenceQuery {
         }
     }
 
+    private List<TransitionStateSet> shortList(List<TransitionStateSet> traceList1, List<TransitionStateSet> traceList2){
+        if(traceList1 == null  && traceList2 == null ){
+            return null;
+        }
+        if(traceList1 == null){
+            return traceList2;
+        }
+        if(traceList2 == null){
+            return traceList1;
+        }
+        else {
+            List<TransitionStateSet> list = traceList1.size() < traceList2.size()? traceList1 : traceList2;
+            return list;
+        }
+    }
 
-    public static List<Node> counterTrace(TA ta){
 
+    public static List<TransitionStateSet> counterTrace(TA ta){
+
+        //初始化dbm
         List<Clock> clockList = new ArrayList<>(ta.getClockSet());
         DBM initDbm = DBM.getInitDBM(clockList);
 
         Location initLocation = ta.getInitLocation();
 
-        Set<Node> visited = new HashSet<>();
-        LinkedList<Node> queue = new LinkedList<>();
-        Node node = new Node(initLocation,initDbm);
-        visited.add(node);
-        queue.offer(node);
+        Set<LocationStateSet> visited = new HashSet<>();
+        LinkedList<LocationStateSet> queue = new LinkedList<>();
+        LocationStateSet initLocationStateSet = new LocationStateSet(initLocation, initDbm);
+        visited.add(initLocationStateSet);
+        queue.offer(initLocationStateSet);
 
         while (!queue.isEmpty()){
-            Node current = queue.poll();
+            LocationStateSet current = queue.poll();
             Location location = current.getLocation();
-            if(location.isAccept() || location.getName().equals("false")){
-                List<Node> nodes = new ArrayList<>();
-                nodes.add(current);
-                while (current.getPreNode()!=null){
-                    current = current.getPreNode();
-                    nodes.add(current);
-                }
-                List<Node> list = new ArrayList<>();
-                for(int i = nodes.size()-1; i>=0; i--){
-                    if(i%2 == 1){
-                        list.add(nodes.get(i));
+            if(location.isAccept()){
+                List<TransitionStateSet> transitionStateSetList = new LinkedList<>();
+                BaseStateSet stateSet = current;
+                while (stateSet != null){
+                    if (stateSet instanceof TransitionStateSet){
+                        transitionStateSetList.add(0, (TransitionStateSet) stateSet);
                     }
+                    stateSet = stateSet.getPreStateSet();
                 }
-                return list;
+                return transitionStateSetList;
             }
             List<TaTransition> taTransitions = ta.getTransitions(location,null,null);
             for(TaTransition t:taTransitions){
-                Map<TimeGuard,Clock> timeGuardClockMap = t.getTimeGuardClockMap();
+                TaTimeGuard taTimeGuard = t.getTaTimeGuard();
                 DBM dbm = current.getDbm().copy();
-                for(Map.Entry<TimeGuard,Clock> entry: timeGuardClockMap.entrySet()){
-                    dbm.and(entry.getValue(),entry.getKey());
-                }
+                dbm.and(taTimeGuard);
                 dbm.canonical();
-
-//                System.out.println(dbm);
-
                 if(dbm.isConsistent()){
-                    Node guardNode = new Node(t.getTargetLocation(),dbm);
-                    guardNode.setAction(t.getAction());
-                    guardNode.setPreNode(current);
+                    //生成迁移的状态集合
+                    TransitionStateSet transitionStateSet = new TransitionStateSet(t.getTargetLocation(), dbm, t.getSymbol());
+                    transitionStateSet.setPreStateSet(current);
+
+                    //生成到达后的状态机和
                     dbm = dbm.copy();
-                    for(Clock c: t.getResetClockSet()){
-                        dbm.reset(c);
-                    }
+                    dbm.reset(t.getResetClockSet());
                     dbm.canonical();
                     dbm.up();
-                    Node newNode = new Node(t.getTargetLocation(),dbm);
-                    newNode.setPreNode(guardNode);
-                    boolean flag = false;
-                    for(Node n: visited){
-                        if(n.include(newNode)){
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if(flag == true){
-                        continue;
-                    }else {
-                        visited.add(newNode);
-                        queue.offer(newNode);
+                    LocationStateSet locationStateSet = new LocationStateSet(t.getTargetLocation(),dbm);
+                    locationStateSet.setPreStateSet(transitionStateSet);
+
+                    if (!checkInclude(visited, locationStateSet)){
+                        visited.add(locationStateSet);
+                        queue.offer(locationStateSet);
                     }
                 }
             }
@@ -193,5 +183,13 @@ public class DeterministicEQ implements EquivalenceQuery {
         return null;
     }
 
+    private static boolean checkInclude(Set<LocationStateSet> locationStateSets, LocationStateSet locationStateSet){
+        for(LocationStateSet n: locationStateSets){
+            if(n.include(locationStateSet)){
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

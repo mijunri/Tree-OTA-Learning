@@ -1,12 +1,20 @@
 package equivalence.ta;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import ota.Location;
+import ota.Transition;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TA {
     private String name;
     private Set<Clock> clockSet;
@@ -14,38 +22,11 @@ public class TA {
     private List<Location> locationList;
     private List<TaTransition> taTransitionList;
 
-    public TA(String name, Set<Clock> clockSet, Set<String> sigma, List<Location> locationList, List<TaTransition> taTransitionList) {
-        this.name = name;
-        this.clockSet = clockSet;
-        this.sigma = sigma;
-        this.locationList = locationList;
-        this.taTransitionList = taTransitionList;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Set<Clock> getClockSet() {
-        return clockSet;
-    }
-
-    public Set<String> getSigma() {
-        return sigma;
-    }
-
-    public List<Location> getLocationList() {
-        return locationList;
-    }
-
-    public List<TaTransition> getTransitionList() {
-        return taTransitionList;
-    }
 
     public Location getInitLocation(){
-        for(Location l:locationList){
-            if(l.isInit()){
-                return l;
+        for(Location location:locationList){
+            if(location.isInit()){
+                return location;
             }
         }
         return null;
@@ -53,47 +34,45 @@ public class TA {
 
     public List<Location> getAcceptedLocations(){
         List<Location> list = new ArrayList<>();
-        for(Location l:locationList){
-            if(l.isAccept()){
-                list.add(l);
+        for(Location location:locationList){
+            if(location.isAccept()){
+                list.add(location);
             }
         }
         return list;
     }
 
-    public List<TaTransition> getTransitions(Location fromLocation, String action, Location toLocation){
+    public List<TaTransition> getTransitions(Location fromLocation,
+                                             String symbol,
+                                             Location toLocation){
         List<TaTransition> list = new ArrayList<>(taTransitionList);
-        if(fromLocation != null){
-            Iterator<TaTransition> iterator = list.iterator();
-            while(iterator.hasNext()){
-                TaTransition t = iterator.next();
-                int tSourceId  = t.getSourceId();
+        Iterator<TaTransition> iterator = list.iterator();
+        while(iterator.hasNext()){
+            TaTransition t = iterator.next();
+            int tSourceId = t.getSourceId();
+            int tTargetId = t.getTargetId();
+            String tSymbol = t.getSymbol();
+
+            if (fromLocation != null){
                 int fromId = fromLocation.getId();
-                if(tSourceId != fromId){
+                if (tSourceId != fromId){
                     iterator.remove();
+                    continue;
                 }
             }
-        }
 
-        if(action != null){
-            Iterator<TaTransition> iterator = list.iterator();
-            while(iterator.hasNext()){
-                TaTransition t = iterator.next();
-                String tAction  = t.getAction();
-                if(!tAction.equals(action)){
+            if (symbol != null){
+                if (!StringUtils.equals(tSymbol,symbol)){
                     iterator.remove();
+                    continue;
                 }
             }
-        }
 
-        if(toLocation != null){
-            Iterator<TaTransition> iterator = list.iterator();
-            while(iterator.hasNext()){
-                TaTransition t = iterator.next();
-                int tTargetId  = t.getTargetId();
+            if (toLocation != null){
                 int toId = toLocation.getId();
-                if(tTargetId != toId){
+                if (toId != tTargetId){
                     iterator.remove();
+                    continue;
                 }
             }
         }
@@ -117,9 +96,8 @@ public class TA {
         }
         sb.deleteCharAt(sb.length()-1).append("]\n\t\"tran\":{\n");
 
-//        OTABuilder.sortTaTran(getTransitionList());
-        for(int i = 0; i < getTransitionList().size();i++){
-            TaTransition t = getTransitionList().get(i);
+        for(int i = 0; i < getTaTransitionList().size();i++){
+            TaTransition t = getTaTransitionList().get(i);
             sb.append("\t\t\"").append(i).append(t.toString()).append(",\n");
         }
         sb.deleteCharAt(sb.length()-2);

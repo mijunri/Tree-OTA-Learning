@@ -42,6 +42,9 @@ public class DeterministicEQ implements EquivalenceQuery {
 
         List<TransitionStateSet> traceList = shortList(traceList1, traceList2);
 
+        if (traceList == null){
+            return null;
+        }
 
         int len = traceList.size();
 

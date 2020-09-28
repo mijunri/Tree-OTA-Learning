@@ -8,12 +8,6 @@ import ota.Location;
 public class TransitionStateSet extends BaseStateSet {
     private String symbol;
 
-    public TransitionStateSet() {
-    }
-
-    public TransitionStateSet(Location location, DBM dbm) {
-        super(location, dbm);
-    }
 
     public TransitionStateSet(Location location, DBM dbm, String symbol) {
         super(location, dbm);

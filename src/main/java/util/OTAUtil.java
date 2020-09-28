@@ -8,6 +8,7 @@ import equivalence.ta.TA;
 import equivalence.ta.TaTimeGuard;
 import equivalence.ta.TaTransition;
 import ota.*;
+import util.comparator.LocationComparator;
 import util.comparator.TranComparator;
 
 import java.io.BufferedReader;
@@ -102,7 +103,7 @@ public class OTAUtil {
         List<Location> locationList = ota.getLocationList();
         Set<String> sigma = ota.getSigma();
 
-        Location sink = new Location(ota.size(),"sink", false, false);
+        Location sink = new Location(ota.size()+1,"sink", false, false);
         for(Location location: locationList){
             for(String symbol: sigma){
                 List<Transition> transitions = ota.getTransitions(location,symbol,null);
@@ -188,6 +189,9 @@ public class OTAUtil {
         sigma.addAll(ota1.getSigma());
         sigma.addAll(ota2.getSigma());
 
+        if (preCheck(ota1.getLocationList()) == false || preCheck(ota2.getLocationList()) == false){
+            throw new RuntimeException("locationList 出错");
+        }
 
 
         Map<Integer, Location> map = new HashMap<>();
@@ -241,6 +245,16 @@ public class OTAUtil {
             l.setAccept(!l.isAccept());
         }
         return neg;
+    }
+
+    private static boolean preCheck(List<Location> locations){
+        locations.sort(new LocationComparator());
+        for(int i = 1; i < locations.size(); i++){
+            if (locations.get(i).getId() - 1 != locations.get(i-1).getId()){
+                return false;
+            }
+        }
+        return true;
     }
 
 }

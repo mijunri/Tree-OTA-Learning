@@ -26,6 +26,7 @@ public class Learner {
         DelayTimeWord delayCe = null;
         classificationTree.buildHypothesis();
         OTA hypothesis = classificationTree.getHypothesis();
+        System.out.println(hypothesis);
         while ((delayCe = equivalenceQuery.findCounterExample(hypothesis)) != null){
             System.out.println(delayCe);
             LogicTimeWord ce = membership.answer(delayCe).getLogicTimeWord();
@@ -42,6 +43,7 @@ public class Learner {
         String path = base+"example.json";
         OTA ota = OTAUtil.getOTAFromJsonFile(path);
         OTAUtil.completeOTA(ota);
+        System.out.println(ota);
         SmartMembership membership = new SmartMembership(ota);
         EquivalenceQuery equivalenceQuery = new DeterministicEQ(ota);
         ClassificationTree classificationTree = new ClassificationTree("h",membership,ota.getSigma());

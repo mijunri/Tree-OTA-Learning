@@ -13,4 +13,12 @@ public class TransitionStateSet extends BaseStateSet {
         super(location, dbm);
         this.symbol = symbol;
     }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("symbol is ").append(symbol).append("\n");
+        sb.append("dbm is :\n").append(getDbm()).append("\n");
+        return sb.toString();
+    }
 }

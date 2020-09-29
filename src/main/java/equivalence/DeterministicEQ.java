@@ -3,11 +3,9 @@ package equivalence;
 import equivalence.ta.TaTimeGuard;
 import ota.Location;
 import ota.OTA;
-import ota.TimeGuard;
 import equivalence.ta.Clock;
 import equivalence.ta.TA;
 import equivalence.ta.TaTransition;
-import ota.Transition;
 import timeword.*;
 import util.OTAUtil;
 import util.TimeWordUtil;
@@ -44,6 +42,10 @@ public class DeterministicEQ implements EquivalenceQuery {
 
         if (traceList == null){
             return null;
+        }
+
+        for (TransitionStateSet transitionStateSet : traceList){
+            System.out.println(transitionStateSet);
         }
 
         int len = traceList.size();

@@ -189,7 +189,7 @@ public class ClassificationTree {
         List<Location> locationList = new ArrayList<>();
         for(int i = 0; i < nodeList.size(); i++){
             Node node = nodeList.get(i);
-            Location location = new Location(i+1,getName()+i+1,node.isInit(),node.isAccpted(),node.getLogicTimeWord());
+            Location location = new Location(i+1,getName()+(i+1),node.isInit(),node.isAccpted(),node.getLogicTimeWord());
             locationList.add(location);
             map.put(node,location);
         }

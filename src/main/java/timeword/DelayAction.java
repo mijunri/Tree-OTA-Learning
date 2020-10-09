@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class DelayAction{
-    private String Symbol;
+    private String symbol;
     private double value;
 
     @Override

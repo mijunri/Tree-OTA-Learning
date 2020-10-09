@@ -3,10 +3,7 @@ package util;
 import ota.Location;
 import ota.OTA;
 import ota.Transition;
-import timeword.DelayAction;
-import timeword.DelayTimeWord;
-import timeword.LogicAction;
-import timeword.LogicTimeWord;
+import timeword.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,6 +22,19 @@ public class TimeWordUtil {
         }
         return prefixes;
     }
+
+    public static Set<LogicTimeWord> getAllPrefixes(LogicTimeWord logicTimeWord) {
+        int len = logicTimeWord.size();
+        Set<LogicTimeWord> prefixes = new HashSet<>();
+        List<LogicAction> actionList = new ArrayList<>();
+        for(int i = 0; i < len; i ++){
+            actionList.add(logicTimeWord.get(i));
+            LogicTimeWord prefixWord = new LogicTimeWord(new ArrayList<>(actionList));
+            prefixes.add(prefixWord);
+        }
+        return prefixes;
+    }
+
 
     public static DelayTimeWord concat(DelayTimeWord prefix, DelayTimeWord suffix){
         List<DelayAction> prefixList = prefix.getActionList();
@@ -87,6 +97,13 @@ public class TimeWordUtil {
         return new LogicTimeWord(actionList);
     }
 
+    private static ResetLogicTimeWord concat(ResetLogicTimeWord resetLogicTimeWord, ResetLogicAction resetLogicAction) {
+        List<ResetLogicAction> actionList = new ArrayList<>();
+        actionList.addAll(resetLogicTimeWord.getActionList());
+        actionList.add(resetLogicAction);
+        return new ResetLogicTimeWord(actionList);
+    }
+
 
     public static LogicTimeWord tranToLogic(OTA ota, DelayTimeWord delayTimeWord){
         List<DelayAction> actionList = delayTimeWord.getActionList();
@@ -101,12 +118,14 @@ public class TimeWordUtil {
             List<Transition> transitions = ota.getTransitions(location,action.getSymbol(),null);
             for(Transition t: transitions){
                 if(t.isPass(symbol,value)){
-                    LogicAction logicAction = new LogicAction(symbol,value,t.isReset()?true:false);
+                    LogicAction logicAction = new LogicAction(symbol,value);
                     word = TimeWordUtil.concat(word,logicAction);
-                    baseValue = t.isReset()?0:baseValue+value;
+                    baseValue = t.isReset()?0:value;
                     location = t.getTargetLocation();
+                    continue;
                 }
             }
+
         }
         return word;
     }
@@ -114,21 +133,19 @@ public class TimeWordUtil {
     public static DelayTimeWord tranToDelay(OTA ota, LogicTimeWord logicTimeWord){
         List<LogicAction> logicActionList = logicTimeWord.getActionList();
         DelayTimeWord word = DelayTimeWord.emptyWord();
-        LogicAction pre = null;
+        double baseValue = 0;
         Location location = ota.getInitLocation();
         for(LogicAction logicAction: logicActionList){
             List<Transition> transitions = ota.getTransitions(location,logicAction.getSymbol(),null);
             String symbol = logicAction.getSymbol();
             double value = logicAction.getValue();
-            if (pre != null && !pre.isReset()){
-                value -= pre.getValue();
-            }
             for(Transition t: transitions){
                 if(t.isPass(symbol,value)){
-                    DelayAction delayAction = new DelayAction(symbol,value);
+                    DelayAction delayAction = new DelayAction(symbol,value-baseValue);
                     word = TimeWordUtil.concat(word,delayAction);
-                    pre = logicAction;
+                    baseValue = t.isReset()?0:value;
                     location = t.getTargetLocation();
+                    break;
                 }
             }
         }
@@ -138,17 +155,38 @@ public class TimeWordUtil {
     public static DelayTimeWord tranToDelay(LogicTimeWord logicTimeWord){
         List<LogicAction> logicActionList = logicTimeWord.getActionList();
         DelayTimeWord word = DelayTimeWord.emptyWord();
-        double clock = 0;
-        for(LogicAction logicAction: logicActionList){
-            String symbol = logicAction.getSymbol();
-            double value = logicAction.getValue() + clock;
-            DelayAction delayAction = new DelayAction(symbol,value);
-            word = TimeWordUtil.concat(word, delayAction);
-            if (logicAction.isReset()){
-                clock = 0;
-            }
-        }
+//        double clock = 0;
+//        for(LogicAction logicAction: logicActionList){
+//            String symbol = logicAction.getSymbol();
+//            double value = logicAction.getValue()-clock;
+//            DelayAction delayAction = new DelayAction(symbol,value);
+//            word = TimeWordUtil.concat(word, delayAction);
+//            if (logicAction.isReset()){
+//                clock = 0;
+//            }else {
+//                clock = logicAction.getValue();
+//            }
+//        }
         return word;
     }
+
+    public static ResetLogicTimeWord tranToReset(OTA ota, LogicTimeWord logicTimeWord){
+        List<LogicAction> logicActionList = logicTimeWord.getActionList();
+        ResetLogicTimeWord resetLogicTimeWord = ResetLogicTimeWord.emptyWord();
+        Location location = ota.getInitLocation();
+        for(LogicAction logicAction: logicActionList){
+            List<Transition> transitions = ota.getTransitions(location,logicAction.getSymbol(),null);
+            for(Transition t: transitions){
+                if(t.isPass(logicAction)){
+                    ResetLogicAction resetLogicAction = new ResetLogicAction(logicAction,t.isReset());
+                    resetLogicTimeWord = TimeWordUtil.concat(resetLogicTimeWord,resetLogicAction);
+                    location = t.getTargetLocation();
+                    break;
+                }
+            }
+        }
+        return resetLogicTimeWord;
+    }
+
 
 }

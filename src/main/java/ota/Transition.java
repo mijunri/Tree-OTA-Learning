@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import timeword.LogicAction;
+import timeword.LogicTimeWord;
 
 
 @Data
@@ -31,6 +33,16 @@ public class Transition {
             return timeGuard.isPass(value);
         }
         return false;
+    }
+
+    public boolean isPass(LogicAction logicAction){
+        if (!StringUtils.equals(getSymbol(),logicAction.getSymbol())){
+            return false;
+        }
+        if (!timeGuard.isPass(logicAction.getValue())){
+            return false;
+        }
+        return true;
     }
 
     public int getSourceId(){
@@ -62,13 +74,13 @@ public class Transition {
     public String toString(){
         StringBuilder sb = new StringBuilder();
         sb.append("<")
-                .append(sourceLocation.getName())
+                .append(sourceLocation.getId())
                 .append(", ")
                 .append(symbol)
                 .append(",")
                 .append(timeGuard)
                 .append(",")
-                .append(targetLocation.getName())
+                .append(targetLocation.getId())
                 .append(",")
                 .append(reset)
                 .append(">");

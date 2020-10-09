@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import timeword.LogicAction;
 import timeword.LogicTimeWord;
+import timeword.ResetLogicAction;
 
 @Data
 @AllArgsConstructor
@@ -12,8 +13,7 @@ public class Track {
 
     private LogicTimeWord source;
     private LogicTimeWord target;
-    private LogicAction action;
-
+    private ResetLogicAction action;
 
     @Override
     public int hashCode(){

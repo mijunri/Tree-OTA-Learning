@@ -126,6 +126,17 @@ public class OTAUtil {
             return;
         }
 
+        for (String symbol : sigma){
+            Transition transition  = Transition.builder()
+                    .sourceLocation(sink)
+                    .targetLocation(sink)
+                    .symbol(symbol)
+                    .reset("r")
+                    .timeGuard(new TimeGuard("[0,+)"))
+                    .build();
+            complementaryTranList.add(transition);
+        }
+
         transitionList.addAll(complementaryTranList);
         locationList.add(sink);
 

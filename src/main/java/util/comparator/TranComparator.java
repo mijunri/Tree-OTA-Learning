@@ -16,7 +16,7 @@ public class TranComparator implements Comparator<Transition> {
         if(var2 != 0){
             return var2;
         }
-        int var3 = o1.getLowerBound() - o2.getUpperBound();
+        int var3 = o1.getLowerBound() - o2.getLowerBound();
         if(var3 !=0){
             return var3;
         }

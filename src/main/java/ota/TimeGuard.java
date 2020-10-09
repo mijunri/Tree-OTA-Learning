@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import timeword.LogicAction;
+import timeword.ResetLogicAction;
 
 @Data
 @NoArgsConstructor
@@ -97,6 +98,25 @@ public class TimeGuard {
         return new TimeGuard(leftOpen,rightOpen,left,right);
     }
 
+    public static TimeGuard bottomGuard(ResetLogicAction action){
+        double time = action.getValue();
+        boolean leftOpen,rightOpen;
+        int left,right;
+        if(time == (int)time){
+            leftOpen = false;
+            left = (int)time;
+            rightOpen = false;
+            right = (int)time;
+        }
+        else {
+            leftOpen = true;
+            left = (int)time;
+            rightOpen = true;
+            right = (int)time+1;
+        }
+        return new TimeGuard(leftOpen,rightOpen,left,right);
+    }
+
 
     //转成整型再比较
     public boolean isPass(double doubleValue){
@@ -115,12 +135,12 @@ public class TimeGuard {
                 return true;
             }
         }
-        if(isUpperBoundOpen() && isUpperBoundClose()){
+        if(isLowerBoundOpen() && isUpperBoundClose()){
             if(intValue > lowerBound && intValue <= upperBound){
                 return true;
             }
         }
-        if(isUpperBoundClose() && isLowerBoundClose()){
+        if(isLowerBoundClose() && isUpperBoundClose()){
             if(intValue >= lowerBound && intValue <= upperBound){
                 return true;
             }

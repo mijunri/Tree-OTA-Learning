@@ -1,17 +1,22 @@
 package timeword;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
-
 @Data
 @AllArgsConstructor
-public class LogicAction{
+@NoArgsConstructor
+public class ResetLogicAction {
     private String symbol;
     private double value;
+    private boolean reset;
+
+    public ResetLogicAction(LogicAction logicAction, boolean reset) {
+        this.symbol = logicAction.getSymbol();
+        this.value = logicAction.getValue();
+        this.reset = reset;
+    }
 
     @Override
     public String toString(){
@@ -20,8 +25,9 @@ public class LogicAction{
                 .append(getSymbol())
                 .append(",")
                 .append(getValue())
+                .append(",")
+                .append(isReset()?"r":"n")
                 .append(")");
         return stringBuilder.toString();
     }
-
 }

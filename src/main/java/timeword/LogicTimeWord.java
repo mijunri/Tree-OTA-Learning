@@ -17,6 +17,12 @@ public class LogicTimeWord{
         return actionList.size();
     }
 
+    public LogicTimeWord(LogicAction logicAction){
+        List<LogicAction> actionList = new ArrayList<>();
+        actionList.add(logicAction);
+        this.actionList = actionList;
+    }
+
     public LogicAction get(int i){
         return actionList.get(i);
     }
@@ -38,6 +44,7 @@ public class LogicTimeWord{
         }
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -49,5 +56,17 @@ public class LogicTimeWord{
     @Override
     public int hashCode() {
         return Objects.hash(getActionList());
+    }
+
+    @Override
+    public String toString(){
+        if (isEmpty()){
+            return "empty";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (LogicAction logicAction: actionList){
+            sb.append(logicAction);
+        }
+        return sb.toString();
     }
 }

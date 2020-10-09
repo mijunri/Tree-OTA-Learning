@@ -44,9 +44,9 @@ public class DeterministicEQ implements EquivalenceQuery {
             return null;
         }
 
-        for (TransitionStateSet transitionStateSet : traceList){
-            System.out.println(transitionStateSet);
-        }
+//        for (TransitionStateSet transitionStateSet : traceList){
+//            System.out.println(transitionStateSet);
+//        }
 
         int len = traceList.size();
 
@@ -75,7 +75,7 @@ public class DeterministicEQ implements EquivalenceQuery {
         LogicTimeWord logicTimeWord = LogicTimeWord.emptyWord();
 
         for(int i = 0; i < len; i++){
-            LogicAction logicAction = new LogicAction(symbolArray[i],lowBounds[i],true);
+            LogicAction logicAction = new LogicAction(symbolArray[i],lowBounds[i]);
             logicTimeWord = TimeWordUtil.concat(logicTimeWord,logicAction);
         }
 

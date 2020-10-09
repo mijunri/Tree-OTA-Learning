@@ -109,7 +109,7 @@ public class OTA{
             boolean flag = false;
             List<Transition> transitionList = getTransitions(location,null,null);
             for(Transition t:transitionList){
-                if(t.isPass(logicAction.getSymbol(), logicAction.getValue())){
+                if(t.isPass(logicAction)){
                     location = t.getTargetLocation();
                     flag = true;
                     break;
@@ -121,6 +121,25 @@ public class OTA{
         }
         return location;
     }
+
+//    public Location getLocationByWord(LogicTimeWord logicTimeWord){
+//        Location location = getInitLocation();
+//        for(LogicAction logicAction : logicTimeWord.getActionList()){
+//            boolean flag = false;
+//            List<Transition> transitionList = getTransitions(location,null,null);
+//            for(Transition t:transitionList){
+//                if(t.isPass(logicAction)){
+//                    location = t.getTargetLocation();
+//                    flag = true;
+//                    break;
+//                }
+//            }
+//            if(flag == false){
+//                return null;
+//            }
+//        }
+//        return location;
+//    }
 
     public Location getLocation(DelayTimeWord delayTimeWord){
         LogicTimeWord logicTimeWord = TimeWordUtil.tranToLogic(this,delayTimeWord);
@@ -136,11 +155,11 @@ public class OTA{
             sb.append("\""+action+"\",");
         }
         sb.deleteCharAt(sb.length()-1).append("],\n\t").append("\"init\":");
-        String init = getInitLocation().getName();
+        String init = getInitLocation().getId()+"";
         sb.append(init).append(",\n\t").append("\"name\":\"").append(getName()).append("\"\n\t");
         sb.append("\"s\":[");
         for(Location l:getLocationList()){
-            sb.append(l.getName()).append(",");
+            sb.append(l.getId()).append(",");
         }
         sb.deleteCharAt(sb.length()-1).append("]\n\t\"tran\":{\n");
 
@@ -148,10 +167,10 @@ public class OTA{
         for(int i = 0; i < getTransitionList().size();i++){
             Transition t = getTransitionList().get(i);
             sb.append("\t\t\"").append(i).append("\":[")
-                    .append(t.getSourceName()).append(",")
+                    .append(t.getSourceId()).append(",")
                     .append("\"").append(t.getSymbol()).append("\",")
                     .append("\"").append(t.getTimeGuard()).append("\",")
-                    .append(t.getTargetName()).append(", ").append(t.getReset()).append("]").append(",\n");
+                    .append(t.getTargetId()).append(", ").append(t.getReset()).append("]").append(",\n");
         }
         sb.deleteCharAt(sb.length()-2);
         sb.append("\t},\n\t").append("\"accpted\":[");

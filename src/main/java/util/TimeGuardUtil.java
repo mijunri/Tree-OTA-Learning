@@ -72,7 +72,7 @@ public class TimeGuardUtil {
 
         TimeGuard pre = guardList.get(0);
         if( pre.getLowerBound() != 0 || pre.isLowerBoundOpen() ){
-            TimeGuard guard = new TimeGuard(false, pre.isUpperBoundClose(),0,pre.getLowerBound());
+            TimeGuard guard = new TimeGuard(false, pre.isLowerBoundClose(),0,pre.getLowerBound());
             complementaryList.add(guard);
         }
 

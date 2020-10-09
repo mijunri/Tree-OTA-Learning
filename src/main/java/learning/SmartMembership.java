@@ -17,13 +17,13 @@ public class SmartMembership {
         count = 0;
     }
 
-    public Answer answer(DelayTimeWord delayTimeWords) {
-        count++;
-        LogicTimeWord logicTimeWord = TimeWordUtil.tranToLogic(teacher, delayTimeWords);
-        Location location = teacher.getLocation(logicTimeWord);
-        return null;
-//        return new Answer(logicTimeWord,location.isAccept());
-    }
+//    public Answer answer(DelayTimeWord delayTimeWords) {
+//        count++;
+//        LogicTimeWord logicTimeWord = TimeWordUtil.tranToLogic(teacher, delayTimeWords);
+//        Location location = teacher.getLocation(logicTimeWord);
+//        return null;
+////        return new Answer(logicTimeWord,location.isAccept());
+//    }
 
     public Answer answer(LogicTimeWord logicTimeWord){
         count++;

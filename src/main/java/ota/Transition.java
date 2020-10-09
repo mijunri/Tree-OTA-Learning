@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import timeword.LogicAction;
 import timeword.LogicTimeWord;
+import timeword.ResetLogicAction;
 
 
 @Data
@@ -40,6 +41,19 @@ public class Transition {
             return false;
         }
         if (!timeGuard.isPass(logicAction.getValue())){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isPass(ResetLogicAction resetLogicAction) {
+        if (!StringUtils.equals(getSymbol(),resetLogicAction.getSymbol())){
+            return false;
+        }
+        if (!timeGuard.isPass(resetLogicAction.getValue())){
+            return false;
+        }
+        if (isReset() != resetLogicAction.isReset()){
             return false;
         }
         return true;
@@ -86,6 +100,7 @@ public class Transition {
                 .append(">");
         return sb.toString();
     }
+
 
 }
 

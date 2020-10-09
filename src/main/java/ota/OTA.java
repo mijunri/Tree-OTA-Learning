@@ -122,6 +122,25 @@ public class OTA{
         return location;
     }
 
+    public Location getLocationWithReset(ResetLogicTimeWord resetLogicTimeWord) {
+        Location location = getInitLocation();
+        for(ResetLogicAction resetLogicAction : resetLogicTimeWord.getActionList()){
+            boolean flag = false;
+            List<Transition> transitionList = getTransitions(location,null,null);
+            for(Transition t:transitionList){
+                if(t.isPass(resetLogicAction)){
+                    location = t.getTargetLocation();
+                    flag = true;
+                    break;
+                }
+            }
+            if(flag == false){
+                return null;
+            }
+        }
+        return location;
+    }
+
 //    public Location getLocationByWord(LogicTimeWord logicTimeWord){
 //        Location location = getInitLocation();
 //        for(LogicAction logicAction : logicTimeWord.getActionList()){
@@ -201,5 +220,6 @@ public class OTA{
         }
         return new OTA(name1,sigma1,locationList1,transitionList1);
     }
+
 
 }

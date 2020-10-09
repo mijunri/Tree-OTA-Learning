@@ -38,6 +38,10 @@ public class ResetLogicTimeWord {
         }
     }
 
+    public ResetLogicAction getLastAction(){
+        return actionList.get(size()-1);
+    }
+
     public boolean isReset(){
         return actionList.get(size()-1).isReset();
     }

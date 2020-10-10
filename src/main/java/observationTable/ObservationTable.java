@@ -1,20 +1,18 @@
 package observationTable;
 
 
-import learning.Answer;
-import learning.SmartMembership;
+import membership.Answer;
+import membership.SmartMembership;
 import lombok.Data;
 import ota.Location;
 import ota.OTA;
 import ota.TimeGuard;
 import ota.Transition;
-import sun.rmi.runtime.Log;
 import timeword.LogicAction;
 import timeword.LogicTimeWord;
 import timeword.ResetLogicTimeWord;
 import util.OTAUtil;
 import util.TimeWordUtil;
-import util.comparator.TranComparator;
 
 import java.util.*;
 

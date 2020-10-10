@@ -1,7 +1,7 @@
 package tree;
 
-import learning.Answer;
-import learning.SmartMembership;
+import membership.Answer;
+import membership.SmartMembership;
 import lombok.Data;
 import ota.Location;
 import ota.OTA;

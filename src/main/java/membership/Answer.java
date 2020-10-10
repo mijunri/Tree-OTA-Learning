@@ -1,8 +1,7 @@
-package learning;
+package membership;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import timeword.LogicTimeWord;
 import timeword.ResetLogicTimeWord;
 
 @Data

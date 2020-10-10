@@ -29,6 +29,8 @@ public class DeterministicEQ implements EquivalenceQuery {
 
     @Override
     public DelayTimeWord findCounterExample(OTA hypothesis) {
+        count++;
+
         OTA negTeacher = OTAUtil.getNegtiveOTA(teacher);
         OTA negHypothesis = OTAUtil.getNegtiveOTA(hypothesis);
 
@@ -82,6 +84,7 @@ public class DeterministicEQ implements EquivalenceQuery {
 
         while (true){
             DelayTimeWord delayTimeWord = TimeWordUtil.tranToDelay(teacher,logicTimeWord);
+//            System.out.println(delayTimeWord);
             Location a1 = teacher.getLocation(delayTimeWord);
             Location a2 = hypothesis.getLocation(delayTimeWord);
             if(a1.isAccept() != a2.isAccept()){

@@ -13,7 +13,7 @@ import timeword.ResetLogicAction;
 @Builder
 public class TimeGuard {
 
-    public static final int MAX_TIME = 1000;
+    public static final int MAX_TIME = 30;
 
     private boolean lowerBoundOpen;
 

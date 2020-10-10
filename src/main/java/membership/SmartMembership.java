@@ -1,6 +1,5 @@
-package learning;
+package membership;
 
-import timeword.DelayTimeWord;
 import ota.Location;
 import ota.OTA;
 import timeword.LogicTimeWord;

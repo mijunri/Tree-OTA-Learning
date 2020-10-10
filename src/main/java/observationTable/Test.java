@@ -24,7 +24,7 @@ public class Test {
 
     public static void main(String[] args) throws IOException {
         String base = ".\\src\\main\\resources\\";
-        String path = base+"example.json";
+        String path = base+"14_4_20\\14_4_20-1.json";
         OTA ota = OTAUtil.getOTAFromJsonFile(path);
         OTAUtil.completeOTA(ota);
         System.out.println(ota);
@@ -38,6 +38,7 @@ public class Test {
 
     public void learn() {
         DelayTimeWord delayCe = null;
+        observationTable.learning();
         observationTable.buildHypothesis();
         OTA hypothesis = observationTable.getHypothesis();
         observationTable.show();

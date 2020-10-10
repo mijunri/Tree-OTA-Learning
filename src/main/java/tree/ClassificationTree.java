@@ -182,7 +182,6 @@ public class ClassificationTree {
 
         OTA evidenceRTA = new OTA(getName(),getSigma(),locationList,transitionList);
         OTA hypothesis = OTAUtil.evidToOTA(evidenceRTA);
-        OTAUtil.completeOTA(hypothesis);
         setHypothesis(hypothesis);
     }
 

@@ -46,7 +46,6 @@ public class ObservationTable {
             r.add(timeWord);
         }
         answers = new HashMap<>();
-        fillTable();
     }
 
     public void learning(){

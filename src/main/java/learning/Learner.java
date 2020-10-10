@@ -48,7 +48,7 @@ public class Learner {
 //
     public static void main(String[] args) throws IOException {
         String base = ".\\src\\main\\resources\\";
-        String path = base+"a.json";
+        String path = base+"14_4_20\\14_4_20-1.json";
         OTA ota = OTAUtil.getOTAFromJsonFile(path);
         OTAUtil.completeOTA(ota);
         System.out.println(ota);

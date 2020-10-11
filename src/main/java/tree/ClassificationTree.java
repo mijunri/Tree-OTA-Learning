@@ -216,32 +216,56 @@ public class ClassificationTree {
     }
 
     private ErrorInformation errLocation(LogicTimeWord ce){
-
         Answer a = smartMembership.answer(ce);
-        for(int i = 0; i <= ce.size(); i++){
-            GamaAnswer answer = gama(ce,i);
-            if (!answer.isSucess()){
+        for(int i = 1; i <= ce.size(); i++){
+            LogicTimeWord prefix = ce.subWord(0,i);
+            ResetLogicTimeWord resetLogicTimeWord1 = TimeWordUtil.tranToReset(teacher, prefix);
+            ResetLogicTimeWord resetLogicTimeWord2 = TimeWordUtil.tranToReset(hypothesis, prefix);
+            if (!resetLogicTimeWord1.equals(resetLogicTimeWord2)){
                 return new ErrorInformation(i-1,true);
             }
+            GamaAnswer answer = gama(ce,i);
             Answer b = smartMembership.answer(answer.getLogicTimeWord());
-            if( a.isAccept() != b.isAccept()){
+            int len = ce.size() - i;
+            List<Boolean> list1 = resetList(len, a.getResetLogicTimeWord());
+            List<Boolean> list2 = resetList(len, b.getResetLogicTimeWord());
+            if( a.isAccept() != b.isAccept() || !list1.equals(list2)){
                 return new ErrorInformation(i-1,false);
             }
         }
         return null;
     }
 
+    private List<Boolean> resetList(int j, ResetLogicTimeWord resetLogicTimeWord){
+        List<Boolean> resetList = new ArrayList<>();
+        int len = resetLogicTimeWord.size();
+        for(int i = len - j; i < resetLogicTimeWord.size(); i++){
+            if (i < 0){
+                resetList.add(true);
+            }
+            else {
+                resetList.add(resetLogicTimeWord.get(i).isReset());
+            }
+        }
+        return resetList;
+    }
+
+    private boolean isSameReset(List<Boolean> list1, List<Boolean> list2){
+        if (list1.size() != list2.size()){
+            throw new RuntimeException("长度出错");
+        }
+        for(int i = 0; i < list1.size(); i++){
+            if (!list1.get(i).equals(list2.get(i))){
+                return false;
+            }
+        }
+        return true;
+    }
 
     private GamaAnswer gama(LogicTimeWord word, int i){
         GamaAnswer gamaAnswer = new GamaAnswer();
         LogicTimeWord w = word.subWord(0,i);
-        ResetLogicTimeWord resetLogicTimeWord = TimeWordUtil.tranToReset(teacher, w);
-        Location location = getHypothesis().getLocationWithReset(resetLogicTimeWord);
-        if (location == null){
-            gamaAnswer.setSucess(false);
-            return gamaAnswer;
-        }
-        gamaAnswer.setSucess(true);
+        Location location = getHypothesis().getLocation(w);
         LogicTimeWord prefix = location.getLogicTimeWord();
         LogicTimeWord suffix = word.subWord(i,word.size());
         LogicTimeWord timeWord = TimeWordUtil.concat(prefix,suffix);

@@ -17,7 +17,7 @@ import java.io.OutputStreamWriter;
 
 public class Experiment {
     public static void main(String[] args) throws IOException {
-        String base = ".\\src\\main\\resources\\7_2_10\\";
+        String base = ".\\src\\main\\resources\\10_4_20\\";
         double tranSize = 0;
         double membershipCount1 = 0;
         double equivalenceCount1 = 0;
@@ -25,8 +25,8 @@ public class Experiment {
         double membershipCount2 = 0;
         double equivalenceCount2 = 0;
 
-        for(int i = 9; i <= 10; i++){
-            String path = base+"7_2_10-"+i+".json";
+        for(int i = 1; i <= 10; i++){
+            String path = base+"10_4_20-"+i+".json";
             OTA teacher = OTAUtil.getOTAFromJsonFile(path);
             OTAUtil.completeOTA(teacher);
             System.out.println(teacher);

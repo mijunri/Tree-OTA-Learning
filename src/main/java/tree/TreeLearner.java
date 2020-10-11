@@ -25,34 +25,34 @@ public class TreeLearner {
         DelayTimeWord delayCe = null;
         classificationTree.buildHypothesis();
         OTA hypothesis = classificationTree.getHypothesis();
-        System.out.println(hypothesis);
+//        System.out.println(hypothesis);
         while ((delayCe = equivalenceQuery.findCounterExample(hypothesis)) != null){
-            System.out.println(delayCe);
+//            System.out.println(delayCe);
             LogicTimeWord ce;
             if (teacher.getLocation(delayCe).isAccept()){
                 ce = TimeWordUtil.tranToLogic(teacher,delayCe);
             }else {
-                ce = TimeWordUtil.tranToLogic(hypothesis, delayCe);
+                ce = TimeWordUtil.tranToLogic(hypothesis,delayCe);
             }
 
-            System.out.println(ce);
+//            System.out.println(ce);
             classificationTree.refine(ce);
             classificationTree.buildHypothesis();
             hypothesis = classificationTree.getHypothesis();
-            System.out.println(hypothesis);
-//            while (teacher.getLocation(ce).isAccept() != hypothesis.getLocation(ce).isAccept()){
-//                classificationTree.refine(ce);
-//                classificationTree.buildHypothesis();
-//                hypothesis = classificationTree.getHypothesis();
+//            System.out.println(hypothesis);
+            while (teacher.getLocation(ce).isAccept() != hypothesis.getLocation(ce).isAccept()){
+                classificationTree.refine(ce);
+                classificationTree.buildHypothesis();
+                hypothesis = classificationTree.getHypothesis();
 //                System.out.println(hypothesis);
-//            }
+            }
         }
         System.out.println("tree learn success");
     }
 //
     public static void main(String[] args) throws IOException {
         String base = ".\\src\\main\\resources\\";
-        String path = base+"7_2_10\\7_2_10-10.json";
+        String path = base+"12_4_20\\14_4_20-10.json";
         OTA ota = OTAUtil.getOTAFromJsonFile(path);
         OTAUtil.completeOTA(ota);
         System.out.println(ota);

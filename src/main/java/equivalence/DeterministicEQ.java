@@ -83,6 +83,7 @@ public class DeterministicEQ implements EquivalenceQuery {
 
 
         while (true){
+//            List<Double> doubleList = new ArrayList<>();
             DelayTimeWord delayTimeWord = TimeWordUtil.tranToDelay(teacher,logicTimeWord);
 //            System.out.println(delayTimeWord);
             Location a1 = teacher.getLocation(delayTimeWord);
@@ -90,27 +91,25 @@ public class DeterministicEQ implements EquivalenceQuery {
             if(a1.isAccept() != a2.isAccept()){
                 return delayTimeWord;
             }
-            else {
-                for(int i = len-1; i >= 0; i-- ){
-                    LogicAction logicAction = logicTimeWord.get(i);
-                    double value = logicAction.getValue();
-                    if(value < highBounds[i]){
-                        double v1 = value+0.1;
-                        if(v1 - (int)v1 < 0.01){
-                            v1 = (int)v1;
-                        }
-                        if((int)(v1)+1 - v1 < 0.01){
-                            v1 = (int)v1+1;
-                        }
-                        logicAction.setValue(v1);
-                        break;
-                    }else {
-                        double v2 = lowBounds[i];
-                        if(v2 - (int)v2 < 0.01){
-                            v2 = (int)v2;
-                        }
-                        logicAction.setValue(v2);
+            for(int i = len-1; i >= 0; i-- ){
+                LogicAction logicAction = logicTimeWord.get(i);
+                double value = logicAction.getValue();
+                if(value < highBounds[i]){
+                    double v1 = value+0.6;
+                    if(v1 - (int)v1 < 0.1){
+                        v1 = (int)v1;
                     }
+                    if((int)(v1)+1 - v1 < 0.1){
+                        v1 = (int)v1+1;
+                    }
+                    logicAction.setValue(v1);
+                    break;
+                }else {
+                    double v2 = lowBounds[i];
+                    if(v2 - (int)v2 < 0.1){
+                        v2 = (int)v2;
+                    }
+                    logicAction.setValue(v2);
                 }
             }
         }

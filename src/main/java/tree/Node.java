@@ -8,13 +8,17 @@ import lombok.NoArgsConstructor;
 import ota.Location;
 import timeword.LogicTimeWord;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Node{
     private LogicTimeWord LogicTimeWord;
-    private Node leftChild;
-    private Node rightChild;
+    private Map<Key, Node> nodeMap = new HashMap<>();
     private boolean init;
     private boolean accpted;
 
@@ -28,9 +32,17 @@ public class Node{
         this.accpted = accpted;
     }
 
-    public void setChilds(Node left, Node right){
-        this.leftChild = left;
-        this.rightChild = right;
+    public void add(Key key, Node node){
+        nodeMap.put(key,node);
+    }
+
+    public Node getChild(Key key){
+        Node node =  nodeMap.get(key);
+        return node;
+    }
+
+    public List<Node> getChildList(){
+        return new ArrayList<>(nodeMap.values());
     }
 
     @Override
@@ -44,15 +56,8 @@ public class Node{
     }
 
     public boolean isLeaf(){
-        if(leftChild!=null){
-            return false;
-        }
-        if(rightChild!=null){
-            return false;
-        }
-        return true;
+        return nodeMap.isEmpty();
     }
-
 
 
     @Override

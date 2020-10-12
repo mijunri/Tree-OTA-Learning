@@ -171,6 +171,9 @@ public class TimeWordUtil {
     }
 
     public static ResetLogicTimeWord tranToReset(OTA ota, LogicTimeWord logicTimeWord){
+        if (logicTimeWord.isEmpty()){
+            return ResetLogicTimeWord.emptyWord();
+        }
         List<LogicAction> logicActionList = logicTimeWord.getActionList();
         ResetLogicTimeWord resetLogicTimeWord = ResetLogicTimeWord.emptyWord();
         Location location = ota.getInitLocation();

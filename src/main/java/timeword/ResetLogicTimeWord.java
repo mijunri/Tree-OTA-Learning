@@ -39,11 +39,14 @@ public class ResetLogicTimeWord {
     }
 
     public ResetLogicAction getLastAction(){
+        if (isEmpty()){
+            return new ResetLogicAction(null,0,true);
+        }
         return actionList.get(size()-1);
     }
 
     public boolean isReset(){
-        return actionList.get(size()-1).isReset();
+        return getLastAction().isReset();
     }
 
     @Override

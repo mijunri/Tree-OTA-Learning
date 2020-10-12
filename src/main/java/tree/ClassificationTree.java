@@ -35,34 +35,31 @@ public class ClassificationTree {
     public void init(){
         root = new Node(LogicTimeWord.emptyWord(),false,false);
 
-        boolean isAccpted = answer(LogicTimeWord.emptyWord());
-        if(isAccpted == false){
-            Node left = new Node(LogicTimeWord.emptyWord(),true,false);
-            root.setLeftChild(left);
-        }else {
-            Node right = new Node(LogicTimeWord.emptyWord(), true,true);
-            root.setRightChild(right);
-        }
-
+        Key key = answer(LogicTimeWord.emptyWord(), LogicTimeWord.emptyWord());
+        Node node = new Node(LogicTimeWord.emptyWord(),true,answer(LogicTimeWord.emptyWord()).isAccept());
+        root.add(key, node);
         refineSymbolTrack(LogicTimeWord.emptyWord());
     }
 
 
 
 
-    public Node sift(LogicTimeWord word){
+    public SiftAnswer sift(LogicTimeWord word){
         Node currentNode = root;
+        Node pre = currentNode;
         while (currentNode != null && !currentNode.isLeaf()){
             LogicTimeWord suffix = currentNode.getLogicTimeWord();
-            LogicTimeWord timeWord = TimeWordUtil.concat(word,suffix);
-            boolean answer = answer(timeWord);
-            if(answer){
-                currentNode = currentNode.getRightChild();
-            }else {
-                currentNode = currentNode.getLeftChild();
+            Key key = answer(word, suffix);
+            pre = currentNode;
+            currentNode = currentNode.getChild(key);
+            if (currentNode == null){
+                Node node = new Node(word, word.isEmpty(), answer(word).isAccept());
+                pre.add(key, node);
+                refineSymbolTrack(word);
+                return new SiftAnswer(node, true);
             }
         }
-        return currentNode;
+        return new SiftAnswer(currentNode,false);
     }
 
 
@@ -70,10 +67,10 @@ public class ClassificationTree {
     public void refine(LogicTimeWord ce){
 
         //the tree is not complete
-        if(!isComplete){
-            refineComplete(ce);
-            return;
-        }
+//        if(!isComplete){
+//            refineComplete(ce);
+//            return;
+//        }
         //the tree is complete
         refineNotComplete(ce);
 
@@ -81,31 +78,20 @@ public class ClassificationTree {
 
     private void refineNotComplete(LogicTimeWord ce) {
         ErrorInformation errorInformation = errLocation(ce);
-        if (errorInformation.isReserError()){
-            int i = errorInformation.getIndex();
-            Location qu = hypothesis.getLocation(ce.subWord(0,i));
-            LogicTimeWord uWord = qu.getLogicTimeWord();
-            LogicAction action = ce.get(i);
-            LogicTimeWord logicTimeWord = TimeWordUtil.concat(uWord,action);
-            ResetLogicTimeWord resetLogicTimeWord = TimeWordUtil.tranToReset(teacher, logicTimeWord);
-            Node vNode = sift(logicTimeWord);
-            Location qv = map.get(vNode);
-            LogicTimeWord source = qu.getLogicTimeWord();
-            LogicTimeWord target = qv.getLogicTimeWord();
-            Track track = new Track(source,target,resetLogicTimeWord.getLastAction());
-            trackSet.add(track);
-            return;
-        }
 
         int j = errorInformation.getIndex();
         Location qu = hypothesis.getLocation(ce.subWord(0,j));
         LogicTimeWord uWord = qu.getLogicTimeWord();
         LogicAction action = ce.get(j);
-        Node vNode = sift(TimeWordUtil.concat(uWord,action));
+        SiftAnswer siftAnswer = sift(TimeWordUtil.concat(uWord,action));
+        if (siftAnswer.isRefine()){
+            return;
+        }
+        Node vNode = siftAnswer.getNode();
         Location qv = map.get(vNode);
         LogicTimeWord vWord = vNode.getLogicTimeWord();
 
-        boolean isPass = checkIsPass(qu,qv,action);
+        boolean isPass = checkIsPass(qu,qv,errorInformation.getResetLogicAction());
 
         if(!isPass){
             LogicTimeWord source = qu.getLogicTimeWord();
@@ -121,14 +107,12 @@ public class ClassificationTree {
             Node node1 = createNode(vWord);
             Node node2 = createNode(newWord);
 
-            if(answer(TimeWordUtil.concat(vWord,suffix))){
-                vNode.setChilds(node2,node1);
-            }else {
-                vNode.setChilds(node1,node2);
-            }
+
+            vNode.add(answer(vWord, suffix), node1);
+            vNode.add(answer(newWord, suffix), node2);
 
             //refine transition
-            refineNode(vWord,suffix,vNode);
+            refineNode(vNode,vWord);
 
             //add transition
             refineSymbolTrack(newWord);
@@ -136,12 +120,13 @@ public class ClassificationTree {
         }
     }
 
-    private boolean checkIsPass(Location qu, Location qv, LogicAction action){
+
+    private boolean checkIsPass(Location qu, Location qv, ResetLogicAction action){
         List<Transition> transitionList = getHypothesis().getTransitions(qu,null,qv);
 
         boolean isPass = false;
         for(Transition t:transitionList){
-            if(t.isPass(action.getSymbol(),action.getValue())){
+            if(t.isPass(action)){
                 isPass = true;
                 break;
             }
@@ -153,24 +138,36 @@ public class ClassificationTree {
     private Node createNode(LogicTimeWord logicTimeWord){
         Node node = new Node();
         node.setInit(logicTimeWord.isEmpty());
-        node.setAccpted(answer(logicTimeWord));
+        node.setAccpted(answer(logicTimeWord).isAccept());
         node.setLogicTimeWord(logicTimeWord);
         return node;
     }
 
     //把指向Node的迁移指向到它的儿子
-    private void refineNode(LogicTimeWord oldSuffix, LogicTimeWord suffix, Node node){
-        for(Track track:trackSet){
+    private void refineNode(Node oldNode, LogicTimeWord oldSuffix){
+        LogicTimeWord suffix = oldNode.getLogicTimeWord();
+        Iterator<Track> iterator = trackSet.iterator();
+        List<LogicTimeWord> newNodeWordList = new ArrayList<>();
+        while (iterator.hasNext()){
+            Track track = iterator.next();
             if(track.getTarget().equals(oldSuffix)){
                 ResetLogicAction resetLogicAction = track.getAction();
                 LogicAction logicAction = new LogicAction(resetLogicAction.getSymbol(), resetLogicAction.getValue());
                 LogicTimeWord timeWord = TimeWordUtil.concat(track.getSource(), logicAction);
-                if(true == answer(TimeWordUtil.concat(timeWord,suffix))){
-                    track.setTarget(node.getRightChild().getLogicTimeWord());
-                }else {
-                    track.setTarget(node.getLeftChild().getLogicTimeWord());
+
+                Key key = answer(timeWord,suffix);
+                Node targetNode = oldNode.getChild(key);
+                if (targetNode == null){
+                    Node node = new Node(timeWord, timeWord.isEmpty(), answer(timeWord).isAccept());
+                    oldNode.add(key, node);
+                    newNodeWordList.add(timeWord);
+                    targetNode = node;
                 }
+                track.setTarget(targetNode.getLogicTimeWord());
             }
+        }
+        for(LogicTimeWord timeWord: newNodeWordList){
+            refineSymbolTrack(timeWord);
         }
     }
 
@@ -216,87 +213,93 @@ public class ClassificationTree {
     }
 
     private ErrorInformation errLocation(LogicTimeWord ce){
-        Answer a = smartMembership.answer(ce);
         for(int i = 1; i <= ce.size(); i++){
             LogicTimeWord prefix = ce.subWord(0,i);
-            ResetLogicTimeWord resetLogicTimeWord1 = TimeWordUtil.tranToReset(teacher, prefix);
-            ResetLogicTimeWord resetLogicTimeWord2 = TimeWordUtil.tranToReset(hypothesis, prefix);
-            if (!resetLogicTimeWord1.equals(resetLogicTimeWord2)){
-                return new ErrorInformation(i-1,true);
+//            ResetLogicTimeWord resetLogicTimeWord1 = TimeWordUtil.tranToReset(teacher, prefix);
+//            ResetLogicTimeWord resetLogicTimeWord2 = TimeWordUtil.tranToReset(hypothesis, prefix);
+//            if (!resetLogicTimeWord1.equals(resetLogicTimeWord2)){
+//                return new ErrorInformation(i-1,true);
+//            }
+            LogicTimeWord u = getLocationMapWord(prefix);
+            LogicTimeWord suffix = ce.subWord(i,ce.size());
+
+            Boolean reset1 = TimeWordUtil.tranToReset(teacher, prefix).isReset();
+            Boolean reset2 = TimeWordUtil.tranToReset(hypothesis, prefix).isReset();
+            LogicAction logicAction = ce.get(i-1);
+            ResetLogicAction resetLogicAction = new ResetLogicAction(logicAction, reset1);
+            if (reset1 != reset2){
+                return new ErrorInformation(i-1,resetLogicAction);
             }
-            GamaAnswer answer = gama(ce,i);
-            Answer b = smartMembership.answer(answer.getLogicTimeWord());
-            int len = ce.size() - i;
-            List<Boolean> list1 = resetList(len, a.getResetLogicTimeWord());
-            List<Boolean> list2 = resetList(len, b.getResetLogicTimeWord());
-            if( a.isAccept() != b.isAccept() || !list1.equals(list2)){
-                return new ErrorInformation(i-1,false);
+            Key key1 = answer(prefix,suffix);
+            Key key2 = answer(u, suffix);
+            if (!key1.equals(key2)){
+                return new ErrorInformation(i-1,resetLogicAction);
             }
         }
         return null;
     }
 
-    private List<Boolean> resetList(int j, ResetLogicTimeWord resetLogicTimeWord){
-        List<Boolean> resetList = new ArrayList<>();
-        int len = resetLogicTimeWord.size();
-        for(int i = len - j; i < resetLogicTimeWord.size(); i++){
-            if (i < 0){
-                resetList.add(true);
-            }
-            else {
-                resetList.add(resetLogicTimeWord.get(i).isReset());
-            }
-        }
-        return resetList;
+    private LogicTimeWord getLocationMapWord(LogicTimeWord logicTimeWord){
+        return hypothesis.getLocation(logicTimeWord).getLogicTimeWord();
     }
 
-    private boolean isSameReset(List<Boolean> list1, List<Boolean> list2){
-        if (list1.size() != list2.size()){
-            throw new RuntimeException("长度出错");
-        }
-        for(int i = 0; i < list1.size(); i++){
-            if (!list1.get(i).equals(list2.get(i))){
-                return false;
-            }
-        }
-        return true;
-    }
+//    private List<Boolean> resetList(int j, ResetLogicTimeWord resetLogicTimeWord){
+//        List<Boolean> resetList = new ArrayList<>();
+//        int len = resetLogicTimeWord.size();
+//        for(int i = len - j; i < resetLogicTimeWord.size(); i++){
+//            if (i < 0){
+//                resetList.add(true);
+//            }
+//            else {
+//                resetList.add(resetLogicTimeWord.get(i).isReset());
+//            }
+//        }
+//        return resetList;
+//    }
 
-    private GamaAnswer gama(LogicTimeWord word, int i){
-        GamaAnswer gamaAnswer = new GamaAnswer();
-        LogicTimeWord w = word.subWord(0,i);
-        Location location = getHypothesis().getLocation(w);
-        LogicTimeWord prefix = location.getLogicTimeWord();
-        LogicTimeWord suffix = word.subWord(i,word.size());
-        LogicTimeWord timeWord = TimeWordUtil.concat(prefix,suffix);
-        gamaAnswer.setLogicTimeWord(timeWord);
-        return gamaAnswer;
-    }
+//    private boolean isSameReset(List<Boolean> list1, List<Boolean> list2){
+//        if (list1.size() != list2.size()){
+//            throw new RuntimeException("长度出错");
+//        }
+//        for(int i = 0; i < list1.size(); i++){
+//            if (!list1.get(i).equals(list2.get(i))){
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+
+//    private GamaAnswer gama(LogicTimeWord word, int i){
+//        GamaAnswer gamaAnswer = new GamaAnswer();
+//        LogicTimeWord w = word.subWord(0,i);
+//        Location location = getHypothesis().getLocation(w);
+//        LogicTimeWord prefix = location.getLogicTimeWord();
+//        LogicTimeWord suffix = word.subWord(i,word.size());
+//        LogicTimeWord timeWord = TimeWordUtil.concat(prefix,suffix);
+//        gamaAnswer.setLogicTimeWord(timeWord);
+//        return gamaAnswer;
+//    }
 
 
-    private void refineComplete(LogicTimeWord ce){
-        Node pre = null;
-        Node current = root;
-        while (!current.isLeaf()){
-            pre = current;
-            LogicTimeWord logicTimeWord = TimeWordUtil.concat(ce,current.getLogicTimeWord());
-            boolean answer = smartMembership.answer(logicTimeWord).isAccept();
-            current = answer?current.getRightChild():current.getLeftChild();;
-
-            if(current == null){
-                boolean init = ce.equals(LogicTimeWord.emptyWord());
-                Node node = new Node(ce,init,answer);
-                if(answer){
-                    pre.setRightChild(node);
-                }else {
-                    pre.setLeftChild(node);
-                }
-                isComplete = true;
-                refineSymbolTrack(ce);
-                break;
-            }
-        }
-    }
+//    private void refineComplete(LogicTimeWord ce){
+//        Node pre = null;
+//        Node current = root;
+//        while (!current.isLeaf()){
+//            pre = current;
+//
+//            Key key = answer(ce, current.getLogicTimeWord());
+//            current = current.getChild(key);
+//
+//            if(current == null){
+//                boolean init = ce.equals(LogicTimeWord.emptyWord());
+//                Node node = new Node(ce,init,answer(ce).isAccept());
+//                pre.add(key, node);
+//                isComplete = true;
+//                refineSymbolTrack(ce);
+//                break;
+//            }
+//        }
+//    }
 
 //    public LogicAction getAction(LogicTimeWord prefix, String symbol, double value){
 //        DelayAction delayAction = new DelayAction(symbol,0);
@@ -312,7 +315,7 @@ public class ClassificationTree {
             LogicTimeWord logicTimeWord = TimeWordUtil.concat(prefix,logicAction);
             ResetLogicTimeWord resetLogicTimeWord = TimeWordUtil.tranToReset(teacher, logicTimeWord);
             ResetLogicAction resetLogicAction = resetLogicTimeWord.getLastAction();
-            Node node = sift(logicTimeWord);
+            Node node = sift(logicTimeWord).getNode();
             LogicTimeWord target;
             if(node == null){
                 refine(logicTimeWord);
@@ -326,9 +329,24 @@ public class ClassificationTree {
     }
 
 
-    private boolean answer(LogicTimeWord logicTimeWord){
-        return smartMembership.answer(logicTimeWord).isAccept();
+    private Answer answer(LogicTimeWord logicTimeWord){
+        return smartMembership.answer(logicTimeWord);
     }
+
+    private Key answer(LogicTimeWord prefix, LogicTimeWord suffix){
+        LogicTimeWord logicTimeWord = TimeWordUtil.concat(prefix, suffix);
+        Answer answer = smartMembership.answer(logicTimeWord);
+        List<Boolean> resetList = new ArrayList<>();
+        ResetLogicTimeWord resetLogicTimeWord = answer.getResetLogicTimeWord();
+        int len = suffix.size();
+        int size = resetLogicTimeWord.size();
+        for(int i = len; i > 0; i--){
+            resetList.add(resetLogicTimeWord.get(size - i).isReset());
+        }
+        return new Key(resetList, answer.isAccept());
+    }
+
+
 
     public Map<LogicTimeWord, Node> getLeafMap(){
         Map<LogicTimeWord, Node> leafMap = new HashMap<>();
@@ -341,13 +359,10 @@ public class ClassificationTree {
                 leafMap.put(suffix,node);
             }
             else {
-                Node left = node.getLeftChild();
-                Node right = node.getRightChild();
-                if(left!=null){
-                    queue.add(left);
-                }
-                if(right!=null){
-                    queue.add(right);
+                for (Node child: node.getChildList()){
+                    if (child != null){
+                        queue.add(child);
+                    }
                 }
             }
         }

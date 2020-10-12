@@ -17,7 +17,7 @@ import java.io.OutputStreamWriter;
 
 public class Experiment {
     public static void main(String[] args) throws IOException {
-        String base = ".\\src\\main\\resources\\10_4_20\\";
+        String base = ".\\src\\main\\resources\\4_4_20\\";
         double tranSize = 0;
         double membershipCount1 = 0;
         double equivalenceCount1 = 0;
@@ -26,10 +26,10 @@ public class Experiment {
         double equivalenceCount2 = 0;
 
         for(int i = 1; i <= 10; i++){
-            String path = base+"10_4_20-"+i+".json";
+            String path = base+"4_4_20-"+i+".json";
             OTA teacher = OTAUtil.getOTAFromJsonFile(path);
             OTAUtil.completeOTA(teacher);
-            System.out.println(teacher);
+            System.out.println(i+"th ota");
             SmartMembership membership1 = new SmartMembership(teacher);
             SmartMembership membership2 = new SmartMembership(teacher);
             EquivalenceQuery equivalenceQuery1 = new DeterministicEQ(teacher);

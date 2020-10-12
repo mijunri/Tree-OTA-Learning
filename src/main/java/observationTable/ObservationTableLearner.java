@@ -24,7 +24,7 @@ public class ObservationTableLearner {
 
     public static void main(String[] args) throws IOException {
         String base = ".\\src\\main\\resources\\";
-        String path = base+"12_4_20\\12_4_20-2.json";
+        String path = base+"7_2_10\\7_2_10-9.json";
         OTA ota = OTAUtil.getOTAFromJsonFile(path);
         OTAUtil.completeOTA(ota);
         System.out.println(ota);
@@ -47,11 +47,7 @@ public class ObservationTableLearner {
         while ((delayCe = equivalenceQuery.findCounterExample(hypothesis)) != null){
 //            System.out.println(delayCe);
             LogicTimeWord ce;
-            if (teacher.getLocation(delayCe).isAccept()){
-                ce = TimeWordUtil.tranToLogic(teacher,delayCe);
-            }else {
-                ce = TimeWordUtil.tranToLogic(hypothesis,delayCe);
-            }
+            ce = TimeWordUtil.tranToLogic(teacher,delayCe);
 //            System.out.println(ce);
             observationTable.refine(ce);
 //            observationTable.show();
